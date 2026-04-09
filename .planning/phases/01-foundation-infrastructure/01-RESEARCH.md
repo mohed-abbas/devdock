@@ -608,22 +608,22 @@ WantedBy=multi-user.target
 | A3 | Claude Code installer (`install.sh`) works in non-interactive Dockerfile `RUN` | Code Examples, Dockerfile | If it requires interactive input, must fall back to npm install method -- test during implementation |
 | A4 | Nginx WebSocket proxy config with `proxy_buffering off` is sufficient for Next.js streaming SSR | Architecture Patterns, nginx config | If streaming breaks, may need additional `X-Accel-Buffering: no` header -- test during deployment |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **PostgreSQL for local development**
    - What we know: VPS has PostgreSQL already. Local dev machine does not have `psql` installed.
    - What's unclear: Should local dev use a Docker-based PostgreSQL or install PostgreSQL natively?
-   - Recommendation: Use a `docker-compose.dev.yml` with a PostgreSQL container for local development. This avoids polluting the dev machine and matches the containerized production pattern.
+   - RESOLVED: Use `docker-compose.dev.yml` with a PostgreSQL 16 container for local development. Implemented in Plan 01-01 Task 1 Step 7. This avoids polluting the dev machine and matches the containerized production pattern.
 
 2. **Docker daemon access on local machine**
    - What we know: Docker 28.4.0 is installed, but `docker ps` exits with code 1 and user `mohed_abbas` is not in the docker group.
    - What's unclear: Is the Docker daemon running? Can the user be added to docker group?
-   - Recommendation: Phase 1 only creates Dockerfiles and templates -- it does not require runtime Docker access. Docker access needed starting Phase 3. For now, just ensure Docker builds work: `docker build -t devdock-base docker/base/`.
+   - RESOLVED: Phase 1 only creates Dockerfiles and templates -- it does not require runtime Docker access. Docker access needed starting Phase 3. Plan 01-02 creates static files only; Plan 01-03 requires Docker for PostgreSQL and schema push (user intervention if Docker unavailable).
 
 3. **Exact nginx include path on VPS**
    - What we know: Existing nginx at `/home/murx/shared/nginx`. Decision D-02 says sites-enabled/.
    - What's unclear: Exact directory structure. Is it `/etc/nginx/sites-enabled/` or a custom path?
-   - Recommendation: Create the nginx config template in `deploy/nginx/devdock.conf`. Actual installation path is determined at VPS deployment time.
+   - RESOLVED: Nginx config template created at `deploy/nginx/devdock.conf` (Plan 01-02 Task 2 Step 3). Actual installation path is determined at VPS deployment time via symlink.
 
 ## Environment Availability
 
