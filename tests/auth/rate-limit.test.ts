@@ -61,4 +61,27 @@ describe('rate-limit', () => {
     const result = checkRateLimit(username);
     expect(result).toEqual({ allowed: true });
   });
+
+  it('tracks different usernames independently', () => {
+    const userA = 'testuser';
+    const userB = 'otheruser';
+
+    // Lock out userA
+    for (let i = 0; i < 5; i++) {
+      recordFailedAttempt(userA);
+    }
+    expect(checkRateLimit(userA).allowed).toBe(false);
+
+    // userB should still be allowed
+    expect(checkRateLimit(userB)).toEqual({ allowed: true });
+
+    // Add some failures for userB but not enough to lock out
+    for (let i = 0; i < 3; i++) {
+      recordFailedAttempt(userB);
+    }
+    expect(checkRateLimit(userB).allowed).toBe(true);
+
+    // userA is still locked
+    expect(checkRateLimit(userA).allowed).toBe(false);
+  });
 });
