@@ -51,7 +51,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **DASH-03**: Dashboard shows production apps from /home/murx/apps/ (read-only)
 - [ ] **DASH-04**: User can view container logs streamed in the web UI
 - [ ] **DASH-05**: User can access web apps in containers via preview URLs (port forwarding)
-- [ ] **DASH-06**: Dashboard is accessible via HTTPS from any device
+- [x] **DASH-06**: Dashboard is accessible via HTTPS from any device
 
 ### Infrastructure
 
@@ -129,7 +129,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DASH-03 | Phase 6 | Pending |
 | DASH-04 | Phase 6 | Pending |
 | DASH-05 | Phase 6 | Pending |
-| DASH-06 | Phase 1 | Pending |
+| DASH-06 | Phase 1 | Complete |
 | INFRA-01 | Phase 1 | Pending |
 | INFRA-02 | Phase 1 | Pending |
 | INFRA-03 | Phase 1 | Pending |

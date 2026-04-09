@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 1 UI-SPEC approved
-last_updated: "2026-04-09T08:14:20.230Z"
-last_activity: 2026-04-09 -- Phase 01 execution started
+stopped_at: Completed 01-01-PLAN.md
+last_updated: "2026-04-09T08:24:02.628Z"
+last_activity: 2026-04-09
 progress:
   total_phases: 7
   completed_phases: 0
   total_plans: 3
-  completed_plans: 0
-  percent: 0
+  completed_plans: 1
+  percent: 33
 ---
 
 # Project State
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-04-08)
 ## Current Position
 
 Phase: 01 (foundation-infrastructure) — EXECUTING
-Plan: 1 of 3
-Status: Executing Phase 01
-Last activity: 2026-04-09 -- Phase 01 execution started
+Plan: 2 of 3
+Status: Ready to execute
+Last activity: 2026-04-09
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -52,6 +52,7 @@ Progress: [░░░░░░░░░░] 0%
 - Trend: -
 
 *Updated after each plan completion*
+| Phase 01-foundation-infrastructure P01 | 6min | 2 tasks | 16 files |
 
 ## Accumulated Context
 
@@ -63,6 +64,9 @@ Recent decisions affecting current work:
 - Stack: Next.js 15 + PostgreSQL 16 + Drizzle ORM + dockerode + xterm.js + Auth.js v5
 - Infrastructure: Use existing nginx (not Caddy), PostgreSQL (not SQLite)
 - Security: Docker socket never mounted into user containers
+- [Phase 01-foundation-infrastructure]: Pinned zod to v3.25.76 (NOT v4) for Auth.js/Drizzle ecosystem compatibility
+- [Phase 01-foundation-infrastructure]: DATABASE_URL read directly from process.env in db/index.ts to avoid circular deps with drizzle-kit
+- [Phase 01-foundation-infrastructure]: Inter font as default sans-serif per shadcn/ui conventions and UI-SPEC
 
 ### Pending Todos
 
@@ -76,6 +80,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-09T07:40:31.419Z
-Stopped at: Phase 1 UI-SPEC approved
-Resume file: .planning/phases/01-foundation-infrastructure/01-UI-SPEC.md
+Last session: 2026-04-09T08:24:02.622Z
+Stopped at: Completed 01-01-PLAN.md
+Resume file: None
