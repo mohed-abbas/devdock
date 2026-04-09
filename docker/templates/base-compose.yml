@@ -1,0 +1,68 @@
+# docker/templates/base-compose.yml
+# Template for new project environments
+# Variables (replaced at generation time):
+#   {{PROJECT_SLUG}} - URL-safe project identifier
+#   {{PROJECT_NAME}} - Human-readable project name
+#   {{BASE_IMAGE}} - devdock-base:latest or custom image
+#   {{HOST_UID}} - Host user UID for permission matching
+#   {{HOST_GID}} - Host user GID for permission matching
+
+services:
+  dev:
+    image: "{{BASE_IMAGE}}"
+    container_name: "devdock-{{PROJECT_SLUG}}-dev"
+    build:
+      context: ../../base
+      args:
+        HOST_UID: "{{HOST_UID}}"
+        HOST_GID: "{{HOST_GID}}"
+    volumes:
+      - ./workspace:/workspace
+      # Claude config mounted read-only per Pitfall #5
+      # Path resolved at generation time
+      # - ${HOME}/.claude:/home/dev/.claude:ro
+    working_dir: /workspace
+    networks:
+      - project-net
+    # No ports published to host (INFRA-05)
+    # mem_limit / cpus added by Phase 7 resource management (D-18)
+    # Docker socket is NEVER mounted here (INFRA-04)
+    restart: unless-stopped
+
+  # Optional sidecar: PostgreSQL (INFRA-01)
+  # Uncomment when project needs a database
+  # postgres:
+  #   image: postgres:16
+  #   container_name: "devdock-{{PROJECT_SLUG}}-postgres"
+  #   environment:
+  #     POSTGRES_DB: "{{PROJECT_SLUG}}"
+  #     POSTGRES_USER: dev
+  #     POSTGRES_PASSWORD: devpassword
+  #   volumes:
+  #     - pgdata:/var/lib/postgresql/data
+  #   networks:
+  #     - project-net
+  #   # No ports published to host (INFRA-05)
+  #   restart: unless-stopped
+
+  # Optional sidecar: Redis (INFRA-01)
+  # Uncomment when project needs a cache
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: "devdock-{{PROJECT_SLUG}}-redis"
+  #   networks:
+  #     - project-net
+  #   # No ports published to host (INFRA-05)
+  #   restart: unless-stopped
+
+networks:
+  project-net:
+    name: "devdock-{{PROJECT_SLUG}}-net"
+    driver: bridge
+    # internal: false -- containers need internet for npm install, git clone (Pitfall #6)
+    # Security: no ports published means no inbound from host (INFRA-05)
+
+# Optional volumes for sidecars
+# volumes:
+#   pgdata:
+#     name: "devdock-{{PROJECT_SLUG}}-pgdata"
