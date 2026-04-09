@@ -29,7 +29,9 @@ EnvironmentFile=/home/murx-dev/devdock/.env
 NoNewPrivileges=true
 ProtectSystem=strict
 ReadWritePaths=/home/murx-dev/devdock/data
+ReadWritePaths=/var/run/docker.sock
 PrivateTmp=true
+SupplementaryGroups=docker
 
 # Resource limits for the DevDock process itself (D-17: ~512MB budget)
 MemoryMax=512M
