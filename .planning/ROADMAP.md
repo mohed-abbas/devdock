@@ -37,7 +37,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 Plans:
 - [x] 01-01-PLAN.md — Next.js 15 scaffold, Drizzle schema, DB client, shadcn/ui, root layout
 - [x] 01-02-PLAN.md — Docker base image, Compose templates, daemon config, nginx, systemd
-- [ ] 01-03-PLAN.md — Health check API, schema push, end-to-end verification
+- [x] 01-03-PLAN.md — Health check API, schema push, end-to-end verification
 
 ### Phase 2: Authentication
 **Goal**: Users can securely access their accounts with persistent sessions protected against common web attacks
