@@ -13,7 +13,7 @@ DevDock delivers a self-hosted remote development platform in seven phases, prog
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [ ] **Phase 1: Foundation & Infrastructure** - Project scaffolding, PostgreSQL schema, nginx/HTTPS, base Docker image, security boundaries
-- [ ] **Phase 2: Authentication** - Username/password login, secure sessions, logout, CSRF protection
+- [x] **Phase 2: Authentication** - Username/password login, secure sessions, logout, CSRF protection
 - [ ] **Phase 3: Environment Lifecycle** - Docker Compose environment CRUD, isolation, persistent storage, real-time status
 - [ ] **Phase 4: Web Terminal & Claude Code** - Browser terminal via xterm.js/WebSocket, Claude Code CLI, shared config mount
 - [ ] **Phase 5: GitHub Integration** - OAuth connection, repo browsing, clone-on-create, encrypted token storage
@@ -52,9 +52,9 @@ Plans:
 **UI hint**: yes
 
 Plans:
-- [ ] 02-01-PLAN.md — Auth.js v5 + bcrypt install, edge-safe config split, middleware, rate limiter, server actions
-- [ ] 02-02-PLAN.md — Login page UI with shadcn Input/Label, LoginForm component, root redirect
-- [ ] 02-03-PLAN.md — Dashboard placeholder with header, logout button, seed script, end-to-end verification
+- [x] 02-01-PLAN.md — Auth.js v5 + bcrypt install, edge-safe config split, middleware, rate limiter, server actions
+- [x] 02-02-PLAN.md — Login page UI with shadcn Input/Label, LoginForm component, root redirect
+- [x] 02-03-PLAN.md — Dashboard placeholder with header, logout button, seed script, end-to-end verification
 
 ### Phase 3: Environment Lifecycle
 **Goal**: Users can create, start, stop, and delete isolated Docker dev environments with persistent storage and real-time status feedback
@@ -147,8 +147,8 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Infrastructure | 0/3 | Planned | - |
-| 2. Authentication | 0/3 | Planned | - |
+| 1. Foundation & Infrastructure | 3/3 | Complete | 2026-04-09 |
+| 2. Authentication | 3/3 | Complete | 2026-04-09 |
 | 3. Environment Lifecycle | 0/3 | Not started | - |
 | 4. Web Terminal & Claude Code | 0/3 | Not started | - |
 | 5. GitHub Integration | 0/3 | Not started | - |
