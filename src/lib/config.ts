@@ -2,8 +2,8 @@ import { z } from 'zod';
 
 const envSchema = z.object({
   DATABASE_URL: z.string().url().startsWith('postgresql://'),
-  NEXTAUTH_URL: z.string().url().optional(),
-  NEXTAUTH_SECRET: z.string().min(32, 'NEXTAUTH_SECRET must be at least 32 characters'),
+  AUTH_SECRET: z.string().min(32, 'AUTH_SECRET must be at least 32 characters'),
+  AUTH_URL: z.string().url().optional(),
   DOCKER_SOCKET: z.string().default('/var/run/docker.sock'),
   DEVDOCK_DATA_DIR: z.string().default('./data'),
   DEVDOCK_MAX_CONCURRENT_ENVS: z.coerce.number().int().min(1).default(3),
