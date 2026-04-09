@@ -32,12 +32,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Base dev container image builds successfully with common tools (git, node, python) and can be started
   4. Docker socket is accessible only to the API server process — not mountable into user containers
   5. Per-project containers use internal Docker networks with no ports published to the host
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 01-01: TBD
-- [ ] 01-02: TBD
-- [ ] 01-03: TBD
+- [ ] 01-01-PLAN.md — Next.js 15 scaffold, Drizzle schema, DB client, shadcn/ui, root layout
+- [ ] 01-02-PLAN.md — Docker base image, Compose templates, daemon config, nginx, systemd
+- [ ] 01-03-PLAN.md — Health check API, schema push, end-to-end verification
 
 ### Phase 2: Authentication
 **Goal**: Users can securely access their accounts with persistent sessions protected against common web attacks
@@ -146,7 +146,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Infrastructure | 0/3 | Not started | - |
+| 1. Foundation & Infrastructure | 0/3 | Planned | - |
 | 2. Authentication | 0/2 | Not started | - |
 | 3. Environment Lifecycle | 0/3 | Not started | - |
 | 4. Web Terminal & Claude Code | 0/3 | Not started | - |
