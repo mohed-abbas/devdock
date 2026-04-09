@@ -48,12 +48,13 @@ Plans:
   2. Session persists across browser refresh and new tabs without re-login
   3. User can log out from any page and is redirected to the login screen
   4. Requests are protected with HTTP-only cookies and CSRF tokens — direct API calls without valid CSRF are rejected
-**Plans**: TBD
+**Plans**: 3 plans
 **UI hint**: yes
 
 Plans:
-- [ ] 02-01: TBD
-- [ ] 02-02: TBD
+- [ ] 02-01-PLAN.md — Auth.js v5 + bcrypt install, edge-safe config split, middleware, rate limiter, server actions
+- [ ] 02-02-PLAN.md — Login page UI with shadcn Input/Label, LoginForm component, root redirect
+- [ ] 02-03-PLAN.md — Dashboard placeholder with header, logout button, seed script, end-to-end verification
 
 ### Phase 3: Environment Lifecycle
 **Goal**: Users can create, start, stop, and delete isolated Docker dev environments with persistent storage and real-time status feedback
@@ -147,7 +148,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & Infrastructure | 0/3 | Planned | - |
-| 2. Authentication | 0/2 | Not started | - |
+| 2. Authentication | 0/3 | Planned | - |
 | 3. Environment Lifecycle | 0/3 | Not started | - |
 | 4. Web Terminal & Claude Code | 0/3 | Not started | - |
 | 5. GitHub Integration | 0/3 | Not started | - |
