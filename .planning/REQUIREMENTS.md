@@ -55,11 +55,11 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Infrastructure
 
-- [ ] **INFRA-01**: Each environment can include sidecar services (Postgres, Redis) via Compose
-- [ ] **INFRA-02**: Base dev container image includes common tools (git, node, python, etc.)
-- [ ] **INFRA-03**: DevDock runs behind existing nginx with its own server block
-- [ ] **INFRA-04**: Docker socket access is restricted to the API server only (never in user containers)
-- [ ] **INFRA-05**: Per-project services do not publish ports to host (internal network only)
+- [x] **INFRA-01**: Each environment can include sidecar services (Postgres, Redis) via Compose
+- [x] **INFRA-02**: Base dev container image includes common tools (git, node, python, etc.)
+- [x] **INFRA-03**: DevDock runs behind existing nginx with its own server block
+- [x] **INFRA-04**: Docker socket access is restricted to the API server only (never in user containers)
+- [x] **INFRA-05**: Per-project services do not publish ports to host (internal network only)
 
 ## v2 Requirements
 
@@ -130,11 +130,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DASH-04 | Phase 6 | Pending |
 | DASH-05 | Phase 6 | Pending |
 | DASH-06 | Phase 1 | Complete |
-| INFRA-01 | Phase 1 | Pending |
-| INFRA-02 | Phase 1 | Pending |
-| INFRA-03 | Phase 1 | Pending |
-| INFRA-04 | Phase 1 | Pending |
-| INFRA-05 | Phase 1 | Pending |
+| INFRA-01 | Phase 1 | Complete |
+| INFRA-02 | Phase 1 | Complete |
+| INFRA-03 | Phase 1 | Complete |
+| INFRA-04 | Phase 1 | Complete |
+| INFRA-05 | Phase 1 | Complete |
 
 **Coverage:**
 - v1 requirements: 31 total
