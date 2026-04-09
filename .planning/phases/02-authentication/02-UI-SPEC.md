@@ -1,7 +1,8 @@
 ---
 phase: 2
 slug: authentication
-status: draft
+status: approved
+reviewed_at: 2026-04-09
 shadcn_initialized: true
 preset: base-nova (neutral base color, CSS variables, Lucide icons)
 created: 2026-04-09
