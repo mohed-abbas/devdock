@@ -12,7 +12,9 @@ Enable productive remote development on any project from anywhere — laptop, ph
 
 ### Validated
 
-(None yet — ship to validate)
+- [x] Accessible via HTTPS from any device — Validated in Phase 1: nginx reverse proxy with TLS, WebSocket support
+- [x] Per-project isolated infrastructure — Validated in Phase 1: Docker Compose template with per-project networks, no published ports
+- [x] Claude Code CLI available inside every dev environment — Validated in Phase 1: base Dockerfile installs Claude Code CLI
 
 ### Active
 
@@ -86,4 +88,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-08 after initialization*
+*Last updated: 2026-04-09 after Phase 1 completion*
