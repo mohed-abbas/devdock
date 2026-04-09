@@ -68,12 +68,12 @@ Exceptions: Touch targets for mobile must be minimum 44px (per WCAG 2.5.5). This
 | Role | Size | Weight | Line Height | Tailwind Class |
 |------|------|--------|-------------|----------------|
 | Body | 16px | 400 (regular) | 1.5 | `text-base font-normal leading-relaxed` |
-| Label | 14px | 500 (medium) | 1.4 | `text-sm font-medium leading-snug` |
+| Label | 14px | 600 (semibold) | 1.4 | `text-sm font-semibold leading-snug` |
 | Heading | 20px | 600 (semibold) | 1.2 | `text-xl font-semibold leading-tight` |
-| Display | 28px | 700 (bold) | 1.2 | `text-2xl font-bold leading-tight` |
+| Display | 28px | 600 (semibold) | 1.2 | `text-2xl font-semibold leading-tight` |
 
 **Constraints:**
-- Maximum 2 font weights in regular content: 400 (body text) and 600 (headings, labels, emphasis). Weight 500 is permitted only for form labels and navigation items. Weight 700 is reserved for page-level display headings only.
+- Exactly 2 font weights used across the entire application: 400 (regular) for body and muted text, 600 (semibold) for labels, navigation items, headings, and display headings. No other weights are permitted.
 - Body text never goes below 14px.
 - Code/monospace text uses `font-mono` (system monospace stack via Tailwind) at 14px weight 400 line-height 1.6.
 
@@ -153,9 +153,9 @@ The Phase 1 root layout (`src/app/layout.tsx`) establishes the shell that all fu
 
 **Root page (`src/app/page.tsx`):**
 - Center-aligned content, vertically and horizontally centered
-- Display the heading "DevDock" at display size (28px bold)
+- Display the heading "DevDock" at display size (28px semibold)
 - Display subheading "Remote development platform" at body size (16px regular), muted color
-- Display body text "Dashboard coming soon. System is running." at label size (14px medium), muted color
+- Display body text "Dashboard coming soon. System is running." at label size (14px semibold), muted color
 - No navigation, no sidebar, no interactive elements
 - This page will be replaced by a redirect to `/dashboard` in Phase 2
 
