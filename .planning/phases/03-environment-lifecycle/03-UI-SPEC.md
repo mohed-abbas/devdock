@@ -77,7 +77,7 @@ Exceptions: All interactive elements (buttons, checkboxes) must have a minimum t
 
 ## Typography
 
-Inherited from Phase 1/2. No changes to the scale.
+Inherited from Phase 1/2. No changes to the scale. Exactly 4 sizes, 2 weights.
 
 | Role | Size | Weight | Line Height | Tailwind Class |
 |------|------|--------|-------------|----------------|
@@ -93,15 +93,15 @@ Inherited from Phase 1/2. No changes to the scale.
 | Page heading "Environments" | Heading | 20px | 600 | foreground |
 | "New Environment" button text | Label | 14px | 600 (Button inherits) | primary-foreground |
 | Environment card name | Label | 14px | 600 | card-foreground |
-| Environment card repo URL | Body | 14px (text-sm) | 400 | muted-foreground |
-| Status badge text | -- | 12px (text-xs) | 600 | varies per status |
-| "Created X ago" timestamp | -- | 12px (text-xs) | 400 | muted-foreground |
+| Environment card repo URL | Label | 14px (text-sm) | 400 | muted-foreground |
+| Status badge text | Label | 14px (text-sm) | 600 | varies per status |
+| "Created X ago" timestamp | Label | 14px (text-sm) | 400 | muted-foreground |
 | Dialog title "Create Environment" | Heading | 20px | 600 | foreground |
 | Form field labels | Label | 14px | 600 | foreground |
-| Form field placeholder text | Body | 14px | 400 | muted-foreground |
+| Form field placeholder text | Label | 14px | 400 | muted-foreground |
 | Empty state heading | Heading | 20px | 600 | foreground |
 | Empty state body | Body | 16px | 400 | muted-foreground |
-| Error message in tooltip/popover | -- | 14px | 400 | destructive |
+| Error message in tooltip/popover | Label | 14px | 400 | destructive |
 | Delete dialog title | Heading | 20px | 600 | foreground |
 | Delete dialog body | Body | 16px | 400 | muted-foreground |
 
@@ -183,12 +183,12 @@ Dashboard layout (from Phase 2)
 | Card grid | `grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4` |
 | Card | shadcn Card with CardHeader, CardAction, CardFooter |
 | Card environment name | `font-semibold text-sm text-card-foreground` in CardTitle |
-| Card repo URL | `text-xs text-muted-foreground truncate max-w-[200px]` in CardDescription |
+| Card repo URL | `text-sm text-muted-foreground truncate max-w-[200px]` in CardDescription |
 | Card repo URL (no repo) | Show nothing (no placeholder text) |
 | Status badge | Custom component with colored dot + status text |
 | Status badge dot | `size-2 rounded-full` with status-specific bg color |
-| Status badge text | `text-xs font-semibold uppercase tracking-wide` |
-| Timestamp | `text-xs text-muted-foreground` using relative time ("2h ago") |
+| Status badge text | `text-sm font-semibold uppercase tracking-wide` |
+| Timestamp | `text-sm text-muted-foreground` using relative time ("2h ago") |
 | Start button | Button variant="outline" size="sm" with Play icon |
 | Stop button | Button variant="outline" size="sm" with Square icon |
 | Delete button | Button variant="destructive" size="sm" with Trash2 icon |
@@ -258,7 +258,7 @@ Dialog (shadcn Dialog, max-w-md)
 | Separator | shadcn Separator between URL field and sidecar section |
 | Checkbox size | Default shadcn size (16px) with 44px label click target |
 | Checkbox label | `text-sm font-medium` |
-| Checkbox description | `text-xs text-muted-foreground` below each label |
+| Checkbox description | `text-sm text-muted-foreground` below each label |
 | Error area | Fixed height `min-h-[20px]`, `aria-live="polite"` |
 | Cancel button | variant="outline", closes dialog |
 | Submit button | variant="default" (primary), type="submit" |
@@ -322,7 +322,7 @@ A custom component that renders a colored dot with uppercase status text inside 
 |----------|-------|
 | Container | `inline-flex items-center gap-2 rounded-full px-2 py-0.5` with status background |
 | Dot | `size-2 rounded-full` with status dot color |
-| Text | `text-xs font-semibold uppercase tracking-wide` with status text color |
+| Text | `text-sm font-semibold uppercase tracking-wide` with status text color |
 | Pulse animation | Dot pulses (`animate-pulse`) when status is `starting` or `stopping` |
 
 ### Status Display Mapping
