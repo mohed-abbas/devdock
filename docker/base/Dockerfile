@@ -36,8 +36,17 @@ RUN curl -fsSL https://deb.nodesource.com/setup_${NODE_MAJOR}.x | bash - \
     && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user matching host UID/GID (Pitfall #9: volume permission mismatch)
-RUN groupadd -g ${HOST_GID} dev \
-    && useradd -m -u ${HOST_UID} -g dev -s /bin/bash dev \
+RUN if getent group ${HOST_GID} >/dev/null 2>&1; then \
+      groupmod -n dev $(getent group ${HOST_GID} | cut -d: -f1); \
+    else \
+      groupadd -g ${HOST_GID} dev; \
+    fi \
+    && if getent passwd ${HOST_UID} >/dev/null 2>&1; then \
+      existing_user=$(getent passwd ${HOST_UID} | cut -d: -f1); \
+      usermod -l dev -d /home/dev -m -g dev -s /bin/bash "$existing_user"; \
+    else \
+      useradd -m -u ${HOST_UID} -g dev -s /bin/bash dev; \
+    fi \
     && echo "dev ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/dev
 
 # Claude Code CLI per D-07 -- install system-wide before switching to non-root
