@@ -1,3 +1,4 @@
+import path from 'path';
 import { z } from 'zod';
 
 const envSchema = z.object({
@@ -18,7 +19,10 @@ function loadConfig(): Config {
     console.error('Invalid environment variables:', parsed.error.flatten().fieldErrors);
     throw new Error('Invalid environment configuration');
   }
-  return parsed.data;
+  const data = parsed.data;
+  // Resolve DEVDOCK_DATA_DIR to absolute path to avoid cwd-dependent resolution
+  data.DEVDOCK_DATA_DIR = path.resolve(data.DEVDOCK_DATA_DIR);
+  return data;
 }
 
 export const config = loadConfig();

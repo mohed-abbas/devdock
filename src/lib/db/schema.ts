@@ -38,6 +38,7 @@ export const environments = pgTable('environments', {
   repoUrl: text('repo_url'),
   branch: varchar('branch', { length: 255 }),
   status: environmentStatusEnum('status').default('stopped').notNull(),
+  errorMessage: text('error_message'),
   composeConfig: jsonb('compose_config'),
   dockerProjectName: varchar('docker_project_name', { length: 255 }),
   networkName: varchar('network_name', { length: 255 }),
