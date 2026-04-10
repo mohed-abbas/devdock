@@ -369,7 +369,7 @@ export async function GET() {
 - **Shell injection via `exec()`:** NEVER use `child_process.exec()` with string interpolation. Always use `execFile()` with argument arrays. [CITED: nodejs.org/api/child_process.html]
 - **Polling from server components:** Server components render once. Polling must happen in client components with `'use client'` directive.
 - **Direct Docker calls in API routes:** Always go through the DockerService module. This centralizes error handling and makes testing possible.
-- **Storing Docker state only in the database:** The database tracks desired state; Docker is the source of truth for actual state. The status API should reconcile both.
+- **Storing Docker state only in the database:** The database tracks desired/last-known state; Docker is the source of truth for actual state. The status API should reconcile both.
 - **Publishing container ports:** Per INFRA-05, no ports are published. Services communicate within their project network.
 
 ## Don't Hand-Roll
@@ -388,7 +388,7 @@ export async function GET() {
 
 ### Pitfall 1: Docker Socket Permission Denied
 
-**What goes wrong:** The Node.js process (running as `mohed_abbas`) cannot access `/var/run/docker.sock` because the user is not in the `docker` group. Docker is installed via snap, and the socket is owned by `root:root` with `srw-rw----` permissions.
+**What goes wrong:** The Node.js process (running as `mohed_abbas`) cannot access `/var/run/docker.sock` because the user is not in the `docker` group. Docker is installed via snap. The socket is owned by `root:root` with `srw-rw----` permissions.
 
 **Why it happens:** Snap Docker does not automatically create a `docker` group. The standard fix (`sudo usermod -aG docker mohed_abbas`) may not work with snap Docker without additional configuration.
 
@@ -595,40 +595,42 @@ function CreateEnvironmentDialog() {
 | A4 | `docker compose up --wait` flag exists in v2.39.1 | Architecture Patterns | Would need to poll container health separately |
 | A5 | Git clone on host (before compose up) is simpler than cloning inside container | Claude's Discretion | If wrong, workspace volume mount timing becomes complex |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Docker socket access for mohed_abbas**
+1. **Docker socket access for mohed_abbas** (RESOLVED -- Plan 03-01 Task 0)
    - What we know: User is NOT in docker group. Docker installed via snap. Socket is `root:root srw-rw----`.
    - What's unclear: Whether snap Docker supports the standard `docker` group, or if a different approach is needed.
-   - Recommendation: This is a **prerequisite blocker**. Plan should include a Wave 0 task to resolve Docker socket access before any lifecycle operations.
+   - Resolution: Plan 03-01 Task 0 (checkpoint:human-action) verifies Docker socket access. If `docker ps` fails, the user runs `sudo usermod -aG docker mohed_abbas` (and potentially `sudo groupadd docker` for snap Docker). The task blocks all downstream work until `docker ps` exits 0.
 
-2. **Base image already built?**
+2. **Base image already built?** (RESOLVED -- Plan 03-01 Task 0)
    - What we know: `docker/base/Dockerfile` exists. The template references `devdock-base:latest`.
    - What's unclear: Whether the base image has been built on this VPS yet.
-   - Recommendation: Plan should include building the base image as an early task if not already done.
+   - Resolution: Plan 03-01 Task 0 checks `docker images devdock-base:latest --format '{{.ID}}'`. If empty, Claude builds it with `docker build -t devdock-base:latest docker/base/`. The task blocks until the image exists.
 
-3. **DEVDOCK_DATA_DIR as relative path**
+3. **DEVDOCK_DATA_DIR as relative path** (RESOLVED -- Plan 03-01 Task 1)
    - What we know: `.env.local` sets `DEVDOCK_DATA_DIR=./data` (relative).
    - What's unclear: Whether this resolves correctly in both `next dev` and `next start`.
-   - Recommendation: Resolve to absolute path in config.ts, or change `.env.local` to use absolute path.
+   - Resolution: Plan 03-01 Task 1 updates `src/lib/config.ts` to call `path.resolve(data.DEVDOCK_DATA_DIR)` in the `loadConfig` function, converting any relative path to absolute at config load time.
 
-4. **Drizzle migration state**
+4. **Drizzle migration state** (RESOLVED -- Plan 03-04 Task 1)
    - What we know: Schema is defined in `schema.ts`. No `drizzle/` migration directory exists.
    - What's unclear: Whether migrations have been applied to the PostgreSQL database or if `drizzle-kit push` was used instead.
-   - Recommendation: Verify database state. The environments table schema must exist before CRUD operations work.
+   - Resolution: Phase 01 and 02 used `drizzle-kit push` (not migrations). Plan 03-04 Task 1 runs `npx drizzle-kit push` to sync the new `errorMessage` column to PostgreSQL before the integration checkpoint.
 
 ## Environment Availability
 
 | Dependency | Required By | Available | Version | Fallback |
 |------------|------------|-----------|---------|----------|
-| Docker Engine | Container lifecycle | Partial (installed, socket access denied) | 28.4.0 | Must resolve permissions |
-| Docker Compose | Stack orchestration | Partial (same socket issue) | v2.39.1 | Same -- fix socket access |
+| Docker Engine | Container lifecycle | Partial (installed, socket access denied) | 28.4.0 | Plan 03-01 Task 0 resolves permissions |
+| Docker Compose | Stack orchestration | Partial (same socket issue) | v2.39.1 | Same -- Plan 03-01 Task 0 |
 | Git | Repo cloning | Yes | 2.43.0 | -- |
 | Node.js | Runtime | Yes | v24.13.0 | -- |
 | PostgreSQL | Database | Yes (implied by working auth) | ^16 | -- |
+| devdock-base:latest | Compose template | Unknown | -- | Plan 03-01 Task 0 builds if missing |
 
 **Missing dependencies with no fallback:**
-- Docker socket access for user `mohed_abbas` -- blocks ALL Docker operations. Must be resolved.
+- Docker socket access for user `mohed_abbas` -- blocks ALL Docker operations. Resolved by Plan 03-01 Task 0.
+- devdock-base:latest image -- blocks all environment creation. Resolved by Plan 03-01 Task 0.
 
 **Missing dependencies with fallback:**
 - None
@@ -640,7 +642,7 @@ function CreateEnvironmentDialog() {
 | Property | Value |
 |----------|-------|
 | Framework | vitest 4.1.4 (dev dependency installed) |
-| Config file | None -- needs vitest.config.ts (Wave 0) |
+| Config file | None -- needs vitest.config.ts (Plan 03-01 Task 1 creates it) |
 | Quick run command | `npx vitest run --reporter=verbose` |
 | Full suite command | `npx vitest run` |
 
@@ -648,25 +650,18 @@ function CreateEnvironmentDialog() {
 
 | Req ID | Behavior | Test Type | Automated Command | File Exists? |
 |--------|----------|-----------|-------------------|-------------|
-| ENV-01 | Create environment (DB + compose generation + start) | unit + integration | `npx vitest run tests/environments/create.test.ts -t "create"` | No -- Wave 0 |
-| ENV-02 | Isolated Docker network per environment | unit | `npx vitest run tests/environments/compose-generator.test.ts -t "network"` | No -- Wave 0 |
-| ENV-03 | Persistent storage via volumes | unit | `npx vitest run tests/environments/compose-generator.test.ts -t "volume"` | No -- Wave 0 |
-| ENV-04 | Start stopped environment | unit | `npx vitest run tests/environments/docker-service.test.ts -t "start"` | No -- Wave 0 |
-| ENV-05 | Stop running environment | unit | `npx vitest run tests/environments/docker-service.test.ts -t "stop"` | No -- Wave 0 |
-| ENV-06 | Delete environment + cleanup | unit | `npx vitest run tests/environments/docker-service.test.ts -t "delete"` | No -- Wave 0 |
-| ENV-07 | Status polling returns correct state | unit | `npx vitest run tests/environments/status.test.ts` | No -- Wave 0 |
+| ENV-01 | Create environment (DB + compose generation + start) | unit | `npx vitest run src/lib/docker/__tests__/compose-generator.test.ts` | No -- Plan 03-01 Task 2 |
+| ENV-02 | Isolated Docker network per environment | unit | `npx vitest run src/lib/docker/__tests__/compose-generator.test.ts -t "network"` | No -- Plan 03-01 Task 2 |
+| ENV-03 | Persistent storage via volumes | unit | `npx vitest run src/lib/docker/__tests__/compose-generator.test.ts -t "volume"` | No -- Plan 03-01 Task 2 |
+| ENV-04 | Start stopped environment | unit | `npx vitest run src/lib/docker/__tests__/docker-service.test.ts -t "start"` | No -- Plan 03-01 Task 3 |
+| ENV-05 | Stop running environment | unit | `npx vitest run src/lib/docker/__tests__/docker-service.test.ts -t "stop"` | No -- Plan 03-01 Task 3 |
+| ENV-06 | Delete environment + cleanup | unit | `npx vitest run src/lib/docker/__tests__/docker-service.test.ts -t "delete"` | No -- Plan 03-01 Task 3 |
+| ENV-07 | Status polling returns correct state | unit | `npx vitest run src/lib/docker/__tests__/docker-service.test.ts -t "status"` | No -- Plan 03-01 Task 3 |
 
 ### Sampling Rate
 - **Per task commit:** `npx vitest run --reporter=verbose`
 - **Per wave merge:** `npx vitest run`
 - **Phase gate:** Full suite green before `/gsd-verify-work`
-
-### Wave 0 Gaps
-- [ ] `vitest.config.ts` -- framework configuration with path aliases
-- [ ] `tests/environments/compose-generator.test.ts` -- covers ENV-01, ENV-02, ENV-03
-- [ ] `tests/environments/docker-service.test.ts` -- covers ENV-04, ENV-05, ENV-06 (mocked Docker calls)
-- [ ] `tests/environments/status.test.ts` -- covers ENV-07
-- [ ] `tests/helpers/` -- shared test fixtures for environment data
 
 ## Security Domain
 
