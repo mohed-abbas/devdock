@@ -65,7 +65,7 @@ Exceptions: All interactive elements (buttons, checkboxes) must have a minimum t
 | Environment card grid gap | 16px (md) | `gap-4` |
 | Card internal padding | 16px (md) | Card default `px-4 py-4` |
 | Dialog body vertical gap | 16px (md) | `space-y-4` |
-| Badge internal padding | 2px vertical, 8px horizontal | `px-2 py-0.5` (Badge default, `py-0.5` = 2px) |
+| Badge internal padding | 4px vertical, 8px horizontal | `px-2 py-1` |
 | Status badge dot to text gap | 8px (sm) | `gap-2` |
 | Card header to content gap | 8px (sm) | Card default `gap-4` |
 | Action buttons gap | 8px (sm) | `gap-2` |
@@ -322,7 +322,7 @@ A custom component that renders a colored dot with uppercase status text inside 
 
 | Property | Value |
 |----------|-------|
-| Container | `inline-flex items-center gap-2 rounded-full px-2 py-0.5` with status background |
+| Container | `inline-flex items-center gap-2 rounded-full px-2 py-1` with status background |
 | Dot | `size-2 rounded-full` with status dot color |
 | Text | `text-sm font-semibold uppercase tracking-wide` with status text color |
 | Pulse animation | Dot pulses (`animate-pulse`) when status is `starting` or `stopping` |
