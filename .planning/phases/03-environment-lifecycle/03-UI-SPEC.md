@@ -65,7 +65,7 @@ Exceptions: All interactive elements (buttons, checkboxes) must have a minimum t
 | Environment card grid gap | 16px (md) | `gap-4` |
 | Card internal padding | 16px (md) | Card default `px-4 py-4` |
 | Dialog body vertical gap | 16px (md) | `space-y-4` |
-| Badge internal padding | 4px vertical, 8px horizontal | `px-2 py-0.5` (Badge default) |
+| Badge internal padding | 2px vertical, 8px horizontal | `px-2 py-0.5` (Badge default, `py-0.5` = 2px) |
 | Status badge dot to text gap | 8px (sm) | `gap-2` |
 | Card header to content gap | 8px (sm) | Card default `gap-4` |
 | Action buttons gap | 8px (sm) | `gap-2` |
@@ -120,6 +120,8 @@ Inherited from Phase 1/2. All values use OKLCH notation from `globals.css` dark 
 | Muted foreground | `oklch(0.708 0 0)` (--muted-foreground) | Repo URLs, timestamps, empty state body, placeholder text |
 | Foreground | `oklch(0.985 0 0)` (--foreground) | Card names, headings, primary text |
 | Border | `oklch(1 0 0 / 10%)` (--border) | Card ring, separator lines |
+
+**Focal point:** The environment card grid is the primary visual anchor; the "New Environment" button is the secondary focal point in the header.
 
 **Accent reserved for (this phase):**
 1. "New Environment" primary CTA button (`bg-primary`)
@@ -237,7 +239,7 @@ Dialog (shadcn Dialog, max-w-md)
 |   |   +-- Error text (if validation fails)
 |   |
 |   +-- DialogFooter
-|       +-- Button "Cancel" (outline variant)
+|       +-- Button "Discard" (outline variant)
 |       +-- Button "Create & Start" (default variant, disabled when submitting)
 ```
 
@@ -260,7 +262,7 @@ Dialog (shadcn Dialog, max-w-md)
 | Checkbox label | `text-sm font-medium` |
 | Checkbox description | `text-sm text-muted-foreground` below each label |
 | Error area | Fixed height `min-h-[20px]`, `aria-live="polite"` |
-| Cancel button | variant="outline", closes dialog |
+| Discard button | variant="outline", closes dialog and discards unsaved form input |
 | Submit button | variant="default" (primary), type="submit" |
 | Submit label (default) | "Create & Start" |
 | Submit label (loading) | "Creating..." with disabled state |
@@ -290,7 +292,7 @@ AlertDialog (shadcn AlertDialog)
 |   +-- AlertDialogDescription: "This will permanently remove the environment, its containers, network, volumes, and workspace files. This action cannot be undone."
 |
 +-- AlertDialogFooter
-    +-- AlertDialogCancel: "Cancel"
+    +-- AlertDialogCancel: "Keep Environment"
     +-- AlertDialogAction (destructive): "Delete Environment"
 ```
 
@@ -301,7 +303,7 @@ AlertDialog (shadcn AlertDialog)
 | Trigger | Delete button (Trash2 icon) on environment card |
 | Title | "Delete {name}?" -- uses actual environment name |
 | Description | "This will permanently remove the environment, its containers, network, volumes, and workspace files. This action cannot be undone." |
-| Cancel button | AlertDialogCancel default styling |
+| Keep button | AlertDialogCancel with label "Keep Environment" -- communicates consequence of not proceeding |
 | Confirm button | `bg-destructive text-destructive-foreground` via destructive class on AlertDialogAction |
 | Confirm label (default) | "Delete Environment" |
 | Confirm label (loading) | "Deleting..." with disabled state |
@@ -365,7 +367,7 @@ A custom component that renders a colored dot with uppercase status text inside 
 | **Default (closed)** | "New Environment" button in page header. |
 | **Open** | Dialog overlay with form. Name input autofocused. |
 | **Filling** | User types name and optional URL, toggles checkboxes. No live validation. |
-| **Submitting** | "Create & Start" becomes "Creating..." and is disabled. Cancel button also disabled. Dialog stays open. |
+| **Submitting** | "Create & Start" becomes "Creating..." and is disabled. "Discard" button also disabled. Dialog stays open. |
 | **Success** | Dialog closes. New card appears in list with "starting" status (picked up by next poll). |
 | **Error** | Error message appears in error region. Form remains editable. Submit button re-enables. |
 
@@ -374,7 +376,7 @@ A custom component that renders a colored dot with uppercase status text inside 
 | State | Visual Treatment |
 |-------|-----------------|
 | **Open** | Alert dialog with environment name in title. |
-| **Confirming** | "Delete Environment" becomes "Deleting..." and is disabled. Cancel also disabled. |
+| **Confirming** | "Delete Environment" becomes "Deleting..." and is disabled. "Keep Environment" also disabled. |
 | **Success** | Dialog closes. Card removed from list on next poll. |
 | **Error** | Dialog closes. Error shown as a toast or inline message on the card (implementation discretion). |
 
@@ -449,6 +451,7 @@ When an environment has status `error`:
 | Page heading | "Environments" |
 | Empty state heading | "No environments yet" |
 | Empty state body | "Create your first development environment to get started." |
+| Create dialog dismiss button | "Discard" |
 | Error: name required | "Name is required." |
 | Error: invalid name | "Name must contain at least one letter or number." |
 | Error: duplicate name | "An environment with this name already exists." |
@@ -461,7 +464,7 @@ When an environment has status `error`:
 | Delete dialog body | "This will permanently remove the environment, its containers, network, volumes, and workspace files. This action cannot be undone." |
 | Delete confirm button | "Delete Environment" |
 | Delete confirm button (loading) | "Deleting..." |
-| Delete cancel button | "Cancel" |
+| Delete dismiss button | "Keep Environment" |
 | Start button tooltip | "Start environment" |
 | Stop button tooltip | "Stop environment" |
 | Delete button tooltip | "Delete environment" |
@@ -473,6 +476,7 @@ When an environment has status `error`:
 - Error messages use period at end. They describe what happened, not what the user did wrong.
 - Button labels use title case for multi-word ("New Environment", "Create & Start", "Delete Environment").
 - Destructive confirmation explains consequences before asking to proceed.
+- No generic "Cancel" labels. Dismiss buttons describe the consequence of not proceeding (e.g. "Discard", "Keep Environment").
 
 ---
 
