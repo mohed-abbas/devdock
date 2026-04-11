@@ -73,7 +73,7 @@ Plans:
 - [x] 03-01-PLAN.md — Backend foundation: types, schema update (errorMessage), config fix, compose generator, Docker service, vitest config + tests
 - [x] 03-02-PLAN.md — API routes: environment CRUD + lifecycle (list, create, get, delete, start, stop) with auth, zod validation, userId scoping
 - [x] 03-03-PLAN.md — Dashboard UI: shadcn components, polling hook, status badge, environment card, creation dialog, delete dialog, environment list
-- [ ] 03-04-PLAN.md — Integration gate: schema push, build verification, test suite, human-verify dashboard UI
+- [x] 03-04-PLAN.md — Integration gate: schema push, build verification, test suite, human-verify dashboard UI
 
 ### Phase 4: Web Terminal & Claude Code
 **Goal**: Users can open a browser-based terminal into any running environment with Claude Code and shared developer tools ready to use

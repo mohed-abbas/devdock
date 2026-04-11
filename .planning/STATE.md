@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: verifying
-stopped_at: Completed 03-03-PLAN.md
-last_updated: "2026-04-10T13:51:19.348Z"
-last_activity: 2026-04-10
+stopped_at: Completed 03-04-PLAN.md
+last_updated: "2026-04-11T09:15:16.648Z"
+last_activity: 2026-04-11
 progress:
   total_phases: 7
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 10
-  completed_plans: 9
-  percent: 90
+  completed_plans: 10
+  percent: 100
 ---
 
 # Project State
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-04-08)
 Phase: 02 (authentication) — COMPLETE
 Plan: 3 of 3
 Status: Phase complete — ready for verification
-Last activity: 2026-04-10
+Last activity: 2026-04-11
 
 Progress: [██████████] 100%
 
@@ -60,6 +60,7 @@ Progress: [██████████] 100%
 | Phase 02-authentication P02 | 3min | 2 tasks | 5 files |
 | Phase 02-authentication P03 | 6min | 2 tasks | 7 files |
 | Phase 03-environment-lifecycle P03 | 14min | 2 tasks | 13 files |
+| Phase 03-environment-lifecycle P04 | 12min | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -86,6 +87,8 @@ Recent decisions affecting current work:
 - [Phase 02]: SessionProvider added to root layout proactively for future client components
 - [Phase 03-environment-lifecycle]: Title attribute for error tooltip on StatusBadge -- simplest cross-platform approach
 - [Phase 03-environment-lifecycle]: Dashboard _components directory pattern for page-specific client components
+- [Phase 03-environment-lifecycle]: Externalize dockerode/ssh2 via serverExternalPackages for Next.js build (native addons cannot be bundled)
+- [Phase 03-environment-lifecycle]: Raise fs.inotify.max_user_watches on VPS so next dev can boot
 
 ### Pending Todos
 
@@ -99,6 +102,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-10T13:51:19.345Z
-Stopped at: Completed 03-03-PLAN.md
+Last session: 2026-04-11T09:15:16.642Z
+Stopped at: Completed 03-04-PLAN.md
 Resume file: None

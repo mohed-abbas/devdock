@@ -18,11 +18,11 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Environment Lifecycle
 
 - [x] **ENV-01**: User can create a new dev environment from a GitHub repo
-- [ ] **ENV-02**: Each environment gets its own isolated Docker network
-- [ ] **ENV-03**: Each environment gets persistent storage via named Docker volumes
-- [ ] **ENV-04**: User can start a stopped environment
-- [ ] **ENV-05**: User can stop a running environment (preserves volumes)
-- [ ] **ENV-06**: User can delete an environment and its resources
+- [x] **ENV-02**: Each environment gets its own isolated Docker network
+- [x] **ENV-03**: Each environment gets persistent storage via named Docker volumes
+- [x] **ENV-04**: User can start a stopped environment
+- [x] **ENV-05**: User can stop a running environment (preserves volumes)
+- [x] **ENV-06**: User can delete an environment and its resources
 - [x] **ENV-07**: Environment status is visible in real-time (running/stopped/error/starting)
 - [ ] **ENV-08**: Each environment has configurable memory and CPU limits
 - [ ] **ENV-09**: Idle environments auto-stop after configurable timeout
@@ -105,11 +105,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AUTH-04 | Phase 2 | Pending |
 | AUTH-05 | Phase 5 | Pending |
 | ENV-01 | Phase 3 | Complete |
-| ENV-02 | Phase 3 | Pending |
-| ENV-03 | Phase 3 | Pending |
-| ENV-04 | Phase 3 | Pending |
-| ENV-05 | Phase 3 | Pending |
-| ENV-06 | Phase 3 | Pending |
+| ENV-02 | Phase 3 | Complete |
+| ENV-03 | Phase 3 | Complete |
+| ENV-04 | Phase 3 | Complete |
+| ENV-05 | Phase 3 | Complete |
+| ENV-06 | Phase 3 | Complete |
 | ENV-07 | Phase 3 | Complete |
 | ENV-08 | Phase 7 | Pending |
 | ENV-09 | Phase 7 | Pending |
