@@ -1,0 +1,41 @@
+# deploy/systemd/devdock.service
+# Install: sudo cp deploy/systemd/devdock.service /etc/systemd/system/
+# Enable: sudo systemctl enable devdock
+# Start: sudo systemctl start devdock
+# Logs: journalctl -u devdock -f
+
+[Unit]
+Description=DevDock Development Platform
+Documentation=https://github.com/your-repo/devdock
+After=network.target postgresql.service docker.service
+Requires=docker.service
+
+[Service]
+Type=simple
+User=murx-dev
+Group=murx-dev
+WorkingDirectory=/home/murx-dev/devdock
+ExecStart=/usr/bin/node .next/standalone/server.js
+Restart=on-failure
+RestartSec=5
+
+# Environment
+Environment=PORT=3000
+Environment=HOSTNAME=127.0.0.1
+Environment=NODE_ENV=production
+EnvironmentFile=/home/murx-dev/devdock/.env
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/home/murx-dev/devdock/data
+ReadWritePaths=/var/run/docker.sock
+PrivateTmp=true
+SupplementaryGroups=docker
+
+# Resource limits for the DevDock process itself (D-17: ~512MB budget)
+MemoryMax=512M
+MemoryHigh=384M
+
+[Install]
+WantedBy=multi-user.target

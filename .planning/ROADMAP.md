@@ -13,7 +13,7 @@ DevDock delivers a self-hosted remote development platform in seven phases, prog
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [ ] **Phase 1: Foundation & Infrastructure** - Project scaffolding, PostgreSQL schema, nginx/HTTPS, base Docker image, security boundaries
-- [ ] **Phase 2: Authentication** - Username/password login, secure sessions, logout, CSRF protection
+- [x] **Phase 2: Authentication** - Username/password login, secure sessions, logout, CSRF protection
 - [ ] **Phase 3: Environment Lifecycle** - Docker Compose environment CRUD, isolation, persistent storage, real-time status
 - [ ] **Phase 4: Web Terminal & Claude Code** - Browser terminal via xterm.js/WebSocket, Claude Code CLI, shared config mount
 - [ ] **Phase 5: GitHub Integration** - OAuth connection, repo browsing, clone-on-create, encrypted token storage
@@ -32,12 +32,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Base dev container image builds successfully with common tools (git, node, python) and can be started
   4. Docker socket is accessible only to the API server process — not mountable into user containers
   5. Per-project containers use internal Docker networks with no ports published to the host
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 01-01: TBD
-- [ ] 01-02: TBD
-- [ ] 01-03: TBD
+- [x] 01-01-PLAN.md — Next.js 15 scaffold, Drizzle schema, DB client, shadcn/ui, root layout
+- [x] 01-02-PLAN.md — Docker base image, Compose templates, daemon config, nginx, systemd
+- [x] 01-03-PLAN.md — Health check API, schema push, end-to-end verification
 
 ### Phase 2: Authentication
 **Goal**: Users can securely access their accounts with persistent sessions protected against common web attacks
@@ -48,12 +48,13 @@ Plans:
   2. Session persists across browser refresh and new tabs without re-login
   3. User can log out from any page and is redirected to the login screen
   4. Requests are protected with HTTP-only cookies and CSRF tokens — direct API calls without valid CSRF are rejected
-**Plans**: TBD
+**Plans**: 3 plans
 **UI hint**: yes
 
 Plans:
-- [ ] 02-01: TBD
-- [ ] 02-02: TBD
+- [x] 02-01-PLAN.md — Auth.js v5 + bcrypt install, edge-safe config split, middleware, rate limiter, server actions
+- [x] 02-02-PLAN.md — Login page UI with shadcn Input/Label, LoginForm component, root redirect
+- [x] 02-03-PLAN.md — Dashboard placeholder with header, logout button, seed script, end-to-end verification
 
 ### Phase 3: Environment Lifecycle
 **Goal**: Users can create, start, stop, and delete isolated Docker dev environments with persistent storage and real-time status feedback
@@ -65,12 +66,14 @@ Plans:
   3. User can delete an environment, removing its containers, network, and volumes
   4. Environment status (running/stopped/error/starting) updates in real-time without manual page refresh
   5. Each environment can include sidecar services (Postgres, Redis) defined in its Compose file
-**Plans**: TBD
+**Plans**: 4 plans
+**UI hint**: yes
 
 Plans:
-- [ ] 03-01: TBD
-- [ ] 03-02: TBD
-- [ ] 03-03: TBD
+- [x] 03-01-PLAN.md — Backend foundation: types, schema update (errorMessage), config fix, compose generator, Docker service, vitest config + tests
+- [x] 03-02-PLAN.md — API routes: environment CRUD + lifecycle (list, create, get, delete, start, stop) with auth, zod validation, userId scoping
+- [x] 03-03-PLAN.md — Dashboard UI: shadcn components, polling hook, status badge, environment card, creation dialog, delete dialog, environment list
+- [x] 03-04-PLAN.md — Integration gate: schema push, build verification, test suite, human-verify dashboard UI
 
 ### Phase 4: Web Terminal & Claude Code
 **Goal**: Users can open a browser-based terminal into any running environment with Claude Code and shared developer tools ready to use
@@ -146,9 +149,9 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Infrastructure | 0/3 | Not started | - |
-| 2. Authentication | 0/2 | Not started | - |
-| 3. Environment Lifecycle | 0/3 | Not started | - |
+| 1. Foundation & Infrastructure | 3/3 | Complete | 2026-04-09 |
+| 2. Authentication | 3/3 | Complete | 2026-04-09 |
+| 3. Environment Lifecycle | 0/4 | Not started | - |
 | 4. Web Terminal & Claude Code | 0/3 | Not started | - |
 | 5. GitHub Integration | 0/3 | Not started | - |
 | 6. Dashboard & Monitoring | 0/3 | Not started | - |

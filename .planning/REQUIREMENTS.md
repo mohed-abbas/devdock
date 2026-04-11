@@ -17,13 +17,13 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Environment Lifecycle
 
-- [ ] **ENV-01**: User can create a new dev environment from a GitHub repo
-- [ ] **ENV-02**: Each environment gets its own isolated Docker network
-- [ ] **ENV-03**: Each environment gets persistent storage via named Docker volumes
-- [ ] **ENV-04**: User can start a stopped environment
-- [ ] **ENV-05**: User can stop a running environment (preserves volumes)
-- [ ] **ENV-06**: User can delete an environment and its resources
-- [ ] **ENV-07**: Environment status is visible in real-time (running/stopped/error/starting)
+- [x] **ENV-01**: User can create a new dev environment from a GitHub repo
+- [x] **ENV-02**: Each environment gets its own isolated Docker network
+- [x] **ENV-03**: Each environment gets persistent storage via named Docker volumes
+- [x] **ENV-04**: User can start a stopped environment
+- [x] **ENV-05**: User can stop a running environment (preserves volumes)
+- [x] **ENV-06**: User can delete an environment and its resources
+- [x] **ENV-07**: Environment status is visible in real-time (running/stopped/error/starting)
 - [ ] **ENV-08**: Each environment has configurable memory and CPU limits
 - [ ] **ENV-09**: Idle environments auto-stop after configurable timeout
 - [ ] **ENV-10**: System caps concurrent running environments to prevent OOM
@@ -51,15 +51,15 @@ Requirements for initial release. Each maps to roadmap phases.
 - [ ] **DASH-03**: Dashboard shows production apps from /home/murx/apps/ (read-only)
 - [ ] **DASH-04**: User can view container logs streamed in the web UI
 - [ ] **DASH-05**: User can access web apps in containers via preview URLs (port forwarding)
-- [ ] **DASH-06**: Dashboard is accessible via HTTPS from any device
+- [x] **DASH-06**: Dashboard is accessible via HTTPS from any device
 
 ### Infrastructure
 
-- [ ] **INFRA-01**: Each environment can include sidecar services (Postgres, Redis) via Compose
-- [ ] **INFRA-02**: Base dev container image includes common tools (git, node, python, etc.)
-- [ ] **INFRA-03**: DevDock runs behind existing nginx with its own server block
-- [ ] **INFRA-04**: Docker socket access is restricted to the API server only (never in user containers)
-- [ ] **INFRA-05**: Per-project services do not publish ports to host (internal network only)
+- [x] **INFRA-01**: Each environment can include sidecar services (Postgres, Redis) via Compose
+- [x] **INFRA-02**: Base dev container image includes common tools (git, node, python, etc.)
+- [x] **INFRA-03**: DevDock runs behind existing nginx with its own server block
+- [x] **INFRA-04**: Docker socket access is restricted to the API server only (never in user containers)
+- [x] **INFRA-05**: Per-project services do not publish ports to host (internal network only)
 
 ## v2 Requirements
 
@@ -104,13 +104,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AUTH-03 | Phase 2 | Pending |
 | AUTH-04 | Phase 2 | Pending |
 | AUTH-05 | Phase 5 | Pending |
-| ENV-01 | Phase 3 | Pending |
-| ENV-02 | Phase 3 | Pending |
-| ENV-03 | Phase 3 | Pending |
-| ENV-04 | Phase 3 | Pending |
-| ENV-05 | Phase 3 | Pending |
-| ENV-06 | Phase 3 | Pending |
-| ENV-07 | Phase 3 | Pending |
+| ENV-01 | Phase 3 | Complete |
+| ENV-02 | Phase 3 | Complete |
+| ENV-03 | Phase 3 | Complete |
+| ENV-04 | Phase 3 | Complete |
+| ENV-05 | Phase 3 | Complete |
+| ENV-06 | Phase 3 | Complete |
+| ENV-07 | Phase 3 | Complete |
 | ENV-08 | Phase 7 | Pending |
 | ENV-09 | Phase 7 | Pending |
 | ENV-10 | Phase 7 | Pending |
@@ -129,12 +129,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DASH-03 | Phase 6 | Pending |
 | DASH-04 | Phase 6 | Pending |
 | DASH-05 | Phase 6 | Pending |
-| DASH-06 | Phase 1 | Pending |
-| INFRA-01 | Phase 1 | Pending |
-| INFRA-02 | Phase 1 | Pending |
-| INFRA-03 | Phase 1 | Pending |
-| INFRA-04 | Phase 1 | Pending |
-| INFRA-05 | Phase 1 | Pending |
+| DASH-06 | Phase 1 | Complete |
+| INFRA-01 | Phase 1 | Complete |
+| INFRA-02 | Phase 1 | Complete |
+| INFRA-03 | Phase 1 | Complete |
+| INFRA-04 | Phase 1 | Complete |
+| INFRA-05 | Phase 1 | Complete |
 
 **Coverage:**
 - v1 requirements: 31 total

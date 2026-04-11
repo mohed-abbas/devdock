@@ -1,0 +1,14 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: devdock
+      POSTGRES_USER: devdock_app
+      POSTGRES_PASSWORD: devdock_dev_password
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - devdock-pgdata:/var/lib/postgresql/data
+
+volumes:
+  devdock-pgdata:
