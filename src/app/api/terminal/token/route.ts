@@ -3,8 +3,7 @@ import { auth } from '@/auth';
 import { db } from '@/lib/db';
 import { environments } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
-import { nanoid } from 'nanoid';
-import { storeToken } from '@/lib/terminal/types';
+import { createSignedToken } from '../../../../../server/terminal-auth';
 import { findDevContainerId } from '@/lib/docker/docker-service';
 import { z } from 'zod';
 
@@ -62,14 +61,12 @@ export async function POST(request: Request) {
     );
   }
 
-  // Generate short-lived token (D-05: 30s TTL)
-  const token = nanoid(32);
-  storeToken({
-    token,
+  // Generate HMAC-signed token (D-05: 30s TTL, cross-process compatible)
+  const token = createSignedToken({
     environmentId,
     userId: session.user.id,
     containerId,
-    expiresAt: Date.now() + 30_000,
+    exp: Date.now() + 30_000,
   });
 
   return NextResponse.json({ token });
