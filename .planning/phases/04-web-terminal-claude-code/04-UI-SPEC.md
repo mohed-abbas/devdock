@@ -13,6 +13,8 @@ created: 2026-04-13
 >
 > **Phase 4 delivers:** a dedicated full-screen terminal page (`/dashboard/env/[id]/terminal`), tabbed multi-terminal sessions via xterm.js + Socket.IO, auto-reconnect overlay, and a "Terminal" button on existing environment cards. No dashboard polish (Phase 6), no resource limits (Phase 7), no GitHub integration (Phase 5).
 
+**Primary focal point:** xterm.js terminal canvas -- occupies remaining viewport height after header and tab bar.
+
 ---
 
 ## Design System
@@ -60,11 +62,11 @@ Exceptions: Terminal page uses zero padding around the xterm.js canvas to maximi
 | Element | Spacing | Tailwind |
 |---------|---------|----------|
 | Terminal page header height | 48px (12 * 4) | `h-12` |
-| Tab bar height | 36px (9 * 4) | `h-9` |
+| Tab bar height | 32px (8 * 4) | `h-8` |
 | Tab bar horizontal padding | 8px (sm) | `px-2` |
-| Tab item horizontal padding | 12px (3 * 4) | `px-3` |
+| Tab item horizontal padding | 16px (md) | `px-4` |
 | Tab item gap | 4px (xs) | `gap-1` |
-| New tab button size | 36px | `size-9` |
+| New tab button size | 32px | `size-8` |
 | Header internal padding | 16px horizontal | `px-4` |
 | Header element gap | 8px (sm) | `gap-2` |
 | Reconnect overlay padding | 24px (lg) | `p-6` |
@@ -117,7 +119,7 @@ Inherited from Phase 1/2/3. All values use OKLCH notation from `globals.css` dar
 **Accent reserved for (this phase):**
 1. "Open Terminal" button on environment cards (`bg-primary`)
 2. Active tab bottom indicator (`border-b-2 border-primary`)
-3. "Retry" button on connection lost overlay (`bg-primary`)
+3. "Retry connection" button on connection lost overlay (`bg-primary`)
 4. Focus rings on interactive elements (`focus-visible:ring-ring`)
 5. No other accent usage in this phase
 
@@ -166,11 +168,11 @@ Terminal page (full viewport height, flex column)
 |   +-- Left: Status indicator (dot, same colors as StatusBadge)
 |   +-- Right: (reserved for future controls)
 |
-+-- Tab bar (h-9, bg-card, border-b, flex items-center px-2)
-|   +-- Tab item (repeated, inline-flex items-center px-3 gap-1)
++-- Tab bar (h-8, bg-card, border-b, flex items-center px-2)
+|   +-- Tab item (repeated, inline-flex items-center px-4 gap-1)
 |   |   +-- Tab label ("Terminal 1", "Terminal 2", ...)
 |   |   +-- Close button (X icon, size-3, visible on hover/active)
-|   +-- New tab button (Plus icon, size-9, variant="ghost")
+|   +-- New tab button (Plus icon, size-8, variant="ghost")
 |
 +-- Terminal container (flex-1, relative, overflow-hidden)
     +-- xterm.js canvas (fills container via addon-fit)
@@ -189,11 +191,12 @@ Terminal page (full viewport height, flex column)
 | Back button | `variant="ghost" size="sm"`, ChevronLeft icon, navigates to `/dashboard` |
 | Environment name | `text-sm font-semibold text-foreground truncate max-w-[200px]` |
 | Status dot in header | `size-2 rounded-full` with status color (same mapping as StatusBadge) |
-| Tab bar height | `h-9` (36px) |
+| Tab bar height | `h-8` (32px) |
 | Tab bar background | `bg-card` (same as header, continuous surface) |
 | Tab bar border | `border-b border-border` |
 | Active tab | `text-foreground border-b-2 border-primary` |
 | Inactive tab | `text-muted-foreground hover:text-foreground` |
+| Tab item padding | `px-4` (16px horizontal) |
 | Tab close button | `size-3 text-muted-foreground hover:text-destructive` hidden until tab hover |
 | New tab button | `variant="ghost" size="sm"` with Plus icon, `size-4` |
 | Terminal container | `flex-1 relative overflow-hidden bg-background p-0` |
@@ -237,7 +240,7 @@ Overlay (same container)
     +-- AlertCircle icon (size-8, destructive)
     +-- "Connection lost" heading (mt-4, text-destructive)
     +-- "The terminal session could not be restored." body (mt-2)
-    +-- "Retry" button (mt-4, default variant)
+    +-- "Retry connection" button (mt-4, default variant)
     +-- "Back to Dashboard" link (mt-2, text-sm, muted-foreground, underline)
 ```
 
@@ -254,7 +257,7 @@ Overlay (same container)
 | Connection lost icon | `AlertCircle` from lucide, `size-8 text-destructive` |
 | Connection lost heading | "Connection lost" -- `text-xl font-semibold text-destructive mt-4` |
 | Connection lost body | "The terminal session could not be restored." -- `text-base text-muted-foreground mt-2` |
-| Retry button | "Retry" -- `variant="default" mt-4` |
+| Retry button | "Retry connection" -- `variant="default" mt-4` |
 | Dashboard link | "Back to Dashboard" -- `text-sm text-muted-foreground underline mt-2` |
 | Reconnect timeout | 30 seconds before switching to "Connection lost" state |
 
@@ -294,7 +297,7 @@ Add a "Terminal" button to existing environment cards. Only visible when the env
 | **Loading** | Terminal container shows skeleton shimmer. Header shows env name and status dot. |
 | **Connected** | xterm.js canvas visible and interactive. Cursor blinking. Tab active. |
 | **Reconnecting** | Reconnect overlay with spinning RefreshCw. Terminal dimmed behind overlay. |
-| **Connection lost** | Connection lost overlay with AlertCircle. Retry button and dashboard link. |
+| **Connection lost** | Connection lost overlay with AlertCircle. "Retry connection" button and dashboard link. |
 | **Tab switching** | Active tab highlighted with primary border. Previous tab content hidden. New tab content shown. Instant switch (no animation). |
 | **New tab opening** | New Docker exec session created. "Terminal N" label appears in tab bar. Focus moves to new tab. |
 | **Closing tab** | Tab removed. Adjacent tab becomes active. If last tab, navigate to dashboard. |
@@ -350,7 +353,7 @@ Add a "Terminal" button to existing environment cards. Only visible when the env
 | Reconnecting body | "Attempting to restore terminal session." |
 | Connection lost heading | "Connection lost" |
 | Connection lost body | "The terminal session could not be restored." |
-| Retry button | "Retry" |
+| Retry button | "Retry connection" |
 | Dashboard link | "Back to Dashboard" |
 | Error: env not running | "Environment is not running. Start it from the dashboard to open a terminal." |
 | Error: WebSocket auth failed | "Terminal authentication failed. Please refresh the page." |
@@ -413,7 +416,7 @@ Add a "Terminal" button to existing environment cards. Only visible when the env
 | Back button | Proper `aria-label="Back to dashboard"` |
 | New tab button | `aria-label="New terminal"` or `aria-label="Maximum 5 terminals"` when disabled |
 | Terminal button on card | `aria-label="Open terminal"` |
-| Touch targets | All header/tab buttons minimum 36px (tab items), action buttons 44px |
+| Touch targets | All header/tab buttons minimum 32px (tab items and new tab button), action buttons 44px |
 
 ---
 
