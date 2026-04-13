@@ -130,7 +130,7 @@ terminalNs.on('connection', (socket) => {
     if (sessions) {
       for (const session of sessions) {
         try {
-          session.stream.destroy();
+          (session.stream as NodeJS.ReadableStream & { destroy?: () => void }).destroy?.();
         } catch {
           // Already destroyed
         }

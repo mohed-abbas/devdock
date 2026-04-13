@@ -5,7 +5,8 @@ import { Card, CardHeader, CardTitle, CardDescription, CardAction, CardFooter } 
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from './status-badge';
 import { DeleteEnvironmentDialog } from './delete-environment-dialog';
-import { Play, Square, Trash2 } from 'lucide-react';
+import { Play, Square, Trash2, TerminalSquare } from 'lucide-react';
+import Link from 'next/link';
 import type { Environment } from '@/hooks/use-environments';
 
 interface EnvironmentCardProps {
@@ -87,6 +88,17 @@ export function EnvironmentCard({ environment, onRefetch }: EnvironmentCardProps
           {formatRelativeTime(environment.createdAt)}
         </span>
         <div className="flex items-center gap-2">
+          {environment.status === 'running' && (
+            <Link
+              href={`/dashboard/env/${environment.id}/terminal`}
+              aria-label="Open terminal"
+              title="Open terminal"
+            >
+              <Button variant="outline" size="sm">
+                <TerminalSquare className="size-4" />
+              </Button>
+            </Link>
+          )}
           {canStart && (
             <Button
               variant="outline"
