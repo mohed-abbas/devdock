@@ -114,6 +114,24 @@ export async function generateComposeFile(
   template = template.replace(/\{\{HOST_UID\}\}/g, String(options.hostUid));
   template = template.replace(/\{\{HOST_GID\}\}/g, String(options.hostGid));
 
+  // Claude config mount (D-07, D-09): full ~/.claude directory read-only
+  const claudeConfigPath = options.claudeConfigPath;
+  if (claudeConfigPath) {
+    template = template.replace(
+      /\{\{CLAUDE_CONFIG_MOUNT\}\}/g,
+      `- ${claudeConfigPath}:/home/dev/.claude:ro`,
+    );
+  } else {
+    // Remove the mount placeholder line entirely
+    template = template.replace(/.*\{\{CLAUDE_CONFIG_MOUNT\}\}\n/g, '');
+  }
+
+  // ANTHROPIC_API_KEY injection (D-08)
+  template = template.replace(
+    /\{\{ANTHROPIC_API_KEY\}\}/g,
+    options.anthropicApiKey || '',
+  );
+
   // Uncomment sidecar sections if enabled
   if (options.enablePostgres) {
     template = uncommentSection(template, 'postgres');

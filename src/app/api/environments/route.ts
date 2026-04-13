@@ -194,6 +194,8 @@ export async function POST(request: NextRequest) {
           hostGid,
           enablePostgres,
           enableRedis,
+          claudeConfigPath: config.CLAUDE_CONFIG_PATH || '',
+          anthropicApiKey: config.ANTHROPIC_API_KEY || '',
         },
         config.DEVDOCK_DATA_DIR,
       );

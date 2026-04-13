@@ -18,10 +18,12 @@ services:
         HOST_GID: "{{HOST_GID}}"
     volumes:
       - ./workspace:/workspace
-      # Claude config mounted read-only per Pitfall #5
-      # Path resolved at generation time
-      # - ${HOME}/.claude:/home/dev/.claude:ro
+      # Claude config mounted read-only (D-07, D-09)
+      {{CLAUDE_CONFIG_MOUNT}}
     working_dir: /workspace
+    environment:
+      - ANTHROPIC_API_KEY={{ANTHROPIC_API_KEY}}
+      - TERM=xterm-256color
     networks:
       - project-net
     # No ports published to host (INFRA-05)
