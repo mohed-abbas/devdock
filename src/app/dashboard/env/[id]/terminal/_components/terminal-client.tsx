@@ -68,7 +68,8 @@ export function TerminalClient({
       socketRef.current = null;
     }
 
-    const socket = io('/terminal', {
+    const terminalServerUrl = process.env.NEXT_PUBLIC_TERMINAL_URL || 'http://localhost:3001';
+    const socket = io(`${terminalServerUrl}/terminal`, {
       path: '/ws/socket.io',
       auth: { token },
       reconnection: true,
@@ -175,25 +176,20 @@ export function TerminalClient({
     setTabs((prev) => {
       const newTabs = prev.filter((t) => t.id !== tabId);
       if (newTabs.length === 0) {
-        // Last tab closed -- navigate to dashboard
-        router.push('/dashboard');
+        // Last tab closed -- navigate to dashboard after render
+        setTimeout(() => router.push('/dashboard'), 0);
         return [];
       }
-      return newTabs;
-    });
-    setActiveTabId((prevActive) => {
-      // If we're closing the active tab, switch to the last remaining tab
-      setTabs((currentTabs) => {
-        const remaining = currentTabs.filter((t) => t.id !== tabId);
-        if (prevActive === tabId && remaining.length > 0) {
-          // Find adjacent tab
-          const closedIdx = currentTabs.findIndex((t) => t.id === tabId);
-          const newIdx = Math.min(closedIdx, remaining.length - 1);
-          setActiveTabId(remaining[newIdx].id);
+      // Switch active tab if we closed the active one
+      setActiveTabId((prevActive) => {
+        if (prevActive === tabId) {
+          const closedIdx = prev.findIndex((t) => t.id === tabId);
+          const newIdx = Math.min(closedIdx, newTabs.length - 1);
+          return newTabs[newIdx].id;
         }
-        return currentTabs;
+        return prevActive;
       });
-      return prevActive;
+      return newTabs;
     });
   }, [router]);
 

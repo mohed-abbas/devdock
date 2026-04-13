@@ -75,10 +75,19 @@ export function TerminalInstance({ visible, onData, onResize, terminalRef }: Ter
     terminal.loadAddon(clipboardAddon);
 
     terminal.open(containerRef.current);
-    fitAddon.fit();
 
     terminalRef.current = terminal;
     fitAddonRef.current = fitAddon;
+
+    // Delay fit() to next animation frame so the renderer is fully initialized
+    // and the DOM layout (flex heights) has been computed. Calling fit()
+    // synchronously after open() causes "this._renderer.value is undefined"
+    // because the renderer hasn't been assigned yet.
+    const rafId = requestAnimationFrame(() => {
+      if (fitAddonRef.current && terminal.element) {
+        fitAddonRef.current.fit();
+      }
+    });
 
     terminal.onData((data) => {
       onDataRef.current(data);
@@ -99,6 +108,7 @@ export function TerminalInstance({ visible, onData, onResize, terminalRef }: Ter
     observer.observe(containerRef.current);
 
     return () => {
+      cancelAnimationFrame(rafId);
       clearTimeout(resizeTimer);
       observer.disconnect();
       terminal.dispose();
