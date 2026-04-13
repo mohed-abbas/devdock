@@ -510,19 +510,19 @@ httpServer.listen(PORT, '127.0.0.1', () => {
 | A5 | In-memory token store is sufficient for terminal auth | Architecture | Acceptable for single-server -- tokens expire in 30s. If server restarts, client retries with new token. |
 | A6 | ClipboardAddon 0.1.0 is compatible with xterm 5.5.0 | Standard Stack | 0.1.0 was released alongside xterm 5.x. If not, native clipboard API fallback. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Token store sharing between Next.js and Socket.IO processes**
+1. **Token store sharing between Next.js and Socket.IO processes** — RESOLVED: HMAC-signed tokens using shared AUTH_SECRET. Both processes can create/verify tokens independently without shared state. No database table needed.
    - What we know: Next.js API generates tokens, Socket.IO server validates them. Two separate Node.js processes.
    - What's unclear: How to share the in-memory token store across processes.
    - Recommendation: Use the PostgreSQL database (already shared) for token storage. A `terminal_tokens` table with `token`, `environment_id`, `user_id`, `expires_at` columns. Tokens are short-lived (30s) and can be cleaned up periodically. Alternatively, use a signed JWT-style token that both processes can verify using a shared secret (the `AUTH_SECRET` env var).
 
-2. **systemd service configuration for two processes**
+2. **systemd service configuration for two processes** — RESOLVED: Two separate service files (`devdock.service` and `devdock-terminal.service`) with After= dependency.
    - What we know: The project uses systemd for process management.
    - What's unclear: Whether to use two service files or one with multiple ExecStart.
    - Recommendation: Two service files (`devdock.service` and `devdock-terminal.service`) with `devdock-terminal.service` depending on `devdock.service` via `After=devdock.service`. Simpler to manage, restart independently.
 
-3. **ANTHROPIC_API_KEY storage location**
+3. **ANTHROPIC_API_KEY storage location** — RESOLVED: Environment variable in `.env.local` for v1. Injected into Docker Compose via compose-generator.
    - What we know: D-08 says "user sets it once in DevDock settings."
    - What's unclear: Where in the database/config this key is stored. No "settings" table exists yet.
    - Recommendation: Add a `settings` table or store in environment variables. For v1, an env var in `.env.local` is simplest. A settings table (key-value) can come with Phase 6 dashboard polish.
