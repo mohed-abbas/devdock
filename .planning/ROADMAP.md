@@ -89,9 +89,9 @@ Plans:
 **UI hint**: yes
 
 Plans:
-- [ ] 04-01-PLAN.md — Dependencies, compose template update (claude mount + API key), Docker exec functions, terminal token API
-- [ ] 04-02-PLAN.md — Standalone Socket.IO terminal server with token auth, exec bridging, systemd + nginx config
-- [ ] 04-03-PLAN.md — Terminal UI: xterm.js page with tabs, reconnect overlay, environment card Terminal button
+- [x] 04-01-PLAN.md — Dependencies, compose template update (claude mount + API key), Docker exec functions, terminal token API
+- [x] 04-02-PLAN.md — Standalone Socket.IO terminal server with token auth, exec bridging, systemd + nginx config
+- [x] 04-03-PLAN.md — Terminal UI: xterm.js page with tabs, reconnect overlay, environment card Terminal button
 
 ### Phase 5: GitHub Integration
 **Goal**: Users can connect their GitHub account and create dev environments directly from their repositories, including private ones
