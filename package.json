@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "seed-admin": "tsx src/scripts/seed-admin.ts",
-    "terminal:dev": "tsx server/terminal-server.ts"
+    "terminal:dev": "tsx --require ./server/env.cjs server/terminal-server.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.3.0",

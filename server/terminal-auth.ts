@@ -7,11 +7,14 @@ export interface TokenPayload {
   exp: number; // Unix timestamp in ms
 }
 
-const AUTH_SECRET = process.env.AUTH_SECRET;
-if (!AUTH_SECRET) throw new Error('AUTH_SECRET environment variable is required');
+function getSecret(): string {
+  const secret = process.env.AUTH_SECRET;
+  if (!secret) throw new Error('AUTH_SECRET environment variable is required');
+  return secret;
+}
 
 function sign(payload: string): string {
-  return createHmac('sha256', AUTH_SECRET!).update(payload).digest('hex');
+  return createHmac('sha256', getSecret()).update(payload).digest('hex');
 }
 
 /**
