@@ -38,11 +38,11 @@ created: 2026-04-13
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 04-01-01 | 01 | 1 | TERM-01 | — | N/A | integration | `npx vitest run src/__tests__/terminal-api.test.ts` | ❌ W0 | ⬜ pending |
-| 04-01-02 | 01 | 1 | TERM-03 | T-04-01 | WebSocket rejects unauthenticated connections | integration | `npx vitest run src/__tests__/terminal-auth.test.ts` | ❌ W0 | ⬜ pending |
-| 04-02-01 | 02 | 1 | TERM-02 | — | N/A | e2e | Manual — xterm.js resize/clipboard in browser | ❌ W0 | ⬜ pending |
-| 04-02-02 | 02 | 2 | TERM-04 | — | N/A | integration | `npx vitest run src/__tests__/claude-code-env.test.ts` | ❌ W0 | ⬜ pending |
-| 04-03-01 | 03 | 2 | TERM-05 | — | Read-only mount prevents writes to host ~/.claude | integration | `npx vitest run src/__tests__/claude-config-mount.test.ts` | ❌ W0 | ⬜ pending |
+| 04-01-01 | 01 | 1 | TERM-04, TERM-05 | T-04-05 | Read-only mount, API key injection | integration | `npx vitest run src/lib/docker/__tests__/compose-generator.test.ts` | yes (extended) | ⬜ pending |
+| 04-01-02 | 01 | 1 | TERM-01, TERM-03 | T-04-01, T-04-02 | Token auth, single-use validation | unit | `npx vitest run src/app/api/terminal/__tests__/token.test.ts` | ❌ W0 | ⬜ pending |
+| 04-02-01 | 02 | 2 | TERM-01, TERM-03 | T-04-08 | Signed token auth for Socket.IO | unit | `AUTH_SECRET=test-secret-32chars npx vitest run server/__tests__/terminal-auth.test.ts` | ❌ W0 | ⬜ pending |
+| 04-02-02 | 02 | 2 | TERM-02 | — | N/A | e2e | Manual — xterm.js resize/clipboard in browser | N/A | ⬜ pending |
+| 04-03-01 | 03 | 3 | TERM-01 to TERM-05 | T-04-14 | Auth + ownership check on terminal page | build | `npx tsc --noEmit && npx next build` | N/A | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -50,12 +50,10 @@ created: 2026-04-13
 
 ## Wave 0 Requirements
 
-- [ ] `src/__tests__/terminal-api.test.ts` — stubs for TERM-01 (terminal API endpoint)
-- [ ] `src/__tests__/terminal-auth.test.ts` — stubs for TERM-03 (authenticated WebSocket)
-- [ ] `src/__tests__/claude-code-env.test.ts` — stubs for TERM-04 (Claude Code functional)
-- [ ] `src/__tests__/claude-config-mount.test.ts` — stubs for TERM-05 (read-only config mount)
+- [ ] `src/app/api/terminal/__tests__/token.test.ts` — stubs for token API validation (auth, ownership, status checks)
+- [ ] `server/__tests__/terminal-auth.test.ts` — stubs for signed token create/verify
 
-*Existing vitest infrastructure from prior phases covers framework installation.*
+*Existing vitest infrastructure from prior phases covers framework installation. `src/lib/docker/__tests__/compose-generator.test.ts` already exists and will be extended.*
 
 ---
 
