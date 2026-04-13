@@ -198,6 +198,11 @@ export function TerminalClient({
     setActiveTabId(tabId);
   }, []);
 
+  // Rename a tab
+  const renameTab = useCallback((tabId: number, newLabel: string) => {
+    setTabs((prev) => prev.map((t) => (t.id === tabId ? { ...t, label: newLabel } : t)));
+  }, []);
+
   // Handle terminal data input
   const handleData = useCallback((tabId: number, data: string) => {
     setTabs((prev) => {
@@ -278,6 +283,7 @@ export function TerminalClient({
         activeTab={activeTabId}
         onTabSwitch={switchTab}
         onTabClose={closeTabById}
+        onTabRename={renameTab}
         onNewTab={addTab}
         maxTabs={MAX_TABS}
       />

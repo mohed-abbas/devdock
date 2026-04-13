@@ -58,7 +58,7 @@ export function TerminalInstance({ visible, onData, onResize, terminalRef }: Ter
     const terminal = new Terminal({
       cursorBlink: true,
       fontSize: 14,
-      fontFamily: 'var(--font-geist-mono), monospace',
+      fontFamily: "'Fira Code', Consolas, 'Courier New', monospace",
       lineHeight: 1.2,
       scrollback: 5000,
       theme: XTERM_THEME,

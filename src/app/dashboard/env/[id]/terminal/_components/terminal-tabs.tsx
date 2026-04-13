@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useRef, useEffect } from 'react';
 import { X, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,6 +15,7 @@ interface TerminalTabsProps {
   activeTab: number;
   onTabSwitch: (tabId: number) => void;
   onTabClose: (tabId: number) => void;
+  onTabRename: (tabId: number, newLabel: string) => void;
   onNewTab: () => void;
   maxTabs: number;
 }
@@ -23,10 +25,29 @@ export function TerminalTabs({
   activeTab,
   onTabSwitch,
   onTabClose,
+  onTabRename,
   onNewTab,
   maxTabs,
 }: TerminalTabsProps) {
   const isMaxed = tabs.length >= maxTabs;
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editValue, setEditValue] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (editingId !== null && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [editingId]);
+
+  const commitRename = (tabId: number) => {
+    const trimmed = editValue.trim();
+    if (trimmed && trimmed !== tabs.find((t) => t.id === tabId)?.label) {
+      onTabRename(tabId, trimmed);
+    }
+    setEditingId(null);
+  };
 
   return (
     <TooltipProvider delay={300}>
@@ -50,6 +71,10 @@ export function TerminalTabs({
                   : 'text-muted-foreground hover:text-foreground'
               }`}
               onClick={() => onTabSwitch(tab.id)}
+              onDoubleClick={() => {
+                setEditingId(tab.id);
+                setEditValue(tab.label);
+              }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
@@ -57,7 +82,24 @@ export function TerminalTabs({
                 }
               }}
             >
-              <span className="truncate max-w-[80px]">{tab.label}</span>
+              {editingId === tab.id ? (
+                <input
+                  ref={inputRef}
+                  value={editValue}
+                  onChange={(e) => setEditValue(e.target.value)}
+                  onBlur={() => commitRename(tab.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') commitRename(tab.id);
+                    if (e.key === 'Escape') setEditingId(null);
+                    e.stopPropagation();
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="bg-transparent border-b border-primary text-foreground text-sm w-[80px] outline-none"
+                  maxLength={20}
+                />
+              ) : (
+                <span className="truncate max-w-[80px]">{tab.label}</span>
+              )}
               <Tooltip>
                 <TooltipTrigger
                   className={`size-3 text-muted-foreground hover:text-destructive ${
