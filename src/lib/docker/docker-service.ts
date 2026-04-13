@@ -169,3 +169,69 @@ export async function removeDataDir(envSlug: string): Promise<void> {
     force: true,
   });
 }
+
+/**
+ * Create an interactive exec session inside a container.
+ * Uses PTY for full terminal emulation (D-03, TERM-01).
+ * Runs as 'dev' user per D-03.
+ * IMPORTANT: With Tty: true, stdout/stderr are multiplexed into a single
+ * raw stream. Do NOT use docker.modem.demuxStream() (Pitfall 1).
+ */
+export async function createExecSession(
+  containerId: string,
+  cols: number,
+  rows: number,
+): Promise<{ execId: string; stream: NodeJS.ReadWriteStream }> {
+  const container = docker.getContainer(containerId);
+
+  const exec = await container.exec({
+    Cmd: ['/bin/bash'],
+    AttachStdin: true,
+    AttachStdout: true,
+    AttachStderr: true,
+    Tty: true,
+    User: 'dev',
+    Env: ['TERM=xterm-256color'],
+  });
+
+  const stream = await exec.start({
+    hijack: true,
+    stdin: true,
+    Tty: true,
+  });
+
+  return { execId: exec.id, stream: stream as unknown as NodeJS.ReadWriteStream };
+}
+
+/**
+ * Resize the PTY of an exec session.
+ * Debounce on the client side (100-150ms) before calling (Pitfall 3).
+ */
+export async function resizeExec(
+  execId: string,
+  cols: number,
+  rows: number,
+): Promise<void> {
+  const exec = docker.getExec(execId);
+  await exec.resize({ h: rows, w: cols });
+}
+
+/**
+ * Find the dev container ID for a Docker Compose project.
+ * Uses the com.docker.compose.service=dev label (Pitfall 7).
+ */
+export async function findDevContainerId(
+  projectName: string,
+): Promise<string | null> {
+  const containers = await docker.listContainers({
+    filters: {
+      label: [
+        `com.docker.compose.project=${projectName}`,
+        'com.docker.compose.service=dev',
+      ],
+    },
+  });
+
+  if (containers.length === 0) return null;
+  return containers[0].Id;
+}
