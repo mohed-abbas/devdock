@@ -16,6 +16,11 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import { Plus } from 'lucide-react';
+import { useGitHubConnection } from '@/hooks/use-github-connection';
+import { RepoCombobox } from './repo-combobox';
+import { BranchSelect } from './branch-select';
+import type { RepoItem } from '@/hooks/use-github-repos';
+import Link from 'next/link';
 
 interface CreateEnvironmentDialogProps {
   onCreated: () => void;
@@ -27,13 +32,21 @@ export function CreateEnvironmentDialog({ onCreated }: CreateEnvironmentDialogPr
   const [error, setError] = useState<string | null>(null);
   const [enablePostgres, setEnablePostgres] = useState(false);
   const [enableRedis, setEnableRedis] = useState(false);
+  const [selectedRepo, setSelectedRepo] = useState<RepoItem | null>(null);
+  const [selectedBranch, setSelectedBranch] = useState('');
+  const [manualMode, setManualMode] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
+
+  const { connected, loading: connectionLoading } = useGitHubConnection();
 
   function resetForm() {
     setError(null);
     setSubmitting(false);
     setEnablePostgres(false);
     setEnableRedis(false);
+    setSelectedRepo(null);
+    setSelectedBranch('');
+    setManualMode(false);
     formRef.current?.reset();
   }
 
@@ -44,13 +57,33 @@ export function CreateEnvironmentDialog({ onCreated }: CreateEnvironmentDialogPr
     }
   }
 
+  function handleRepoSelect(repo: RepoItem | null) {
+    setSelectedRepo(repo);
+    if (repo) {
+      setSelectedBranch(repo.defaultBranch);
+    } else {
+      setSelectedBranch('');
+    }
+  }
+
+  function switchToManual() {
+    setManualMode(true);
+    setSelectedRepo(null);
+    setSelectedBranch('');
+  }
+
+  function switchToGitHub() {
+    setManualMode(false);
+    // Manual URL will be cleared by form reset of that field
+  }
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
 
     const formData = new FormData(e.currentTarget);
     const name = (formData.get('name') as string).trim();
-    const repoUrl = (formData.get('repoUrl') as string).trim();
+    const manualRepoUrl = (formData.get('repoUrl') as string | null)?.trim() ?? '';
 
     // Client-side validation
     if (!name) {
@@ -58,9 +91,10 @@ export function CreateEnvironmentDialog({ onCreated }: CreateEnvironmentDialogPr
       return;
     }
 
-    if (repoUrl) {
+    // Validate manual URL if in manual mode
+    if (showManualInput && manualRepoUrl) {
       try {
-        new URL(repoUrl);
+        new URL(manualRepoUrl);
       } catch {
         setError('Please enter a valid URL.');
         return;
@@ -75,7 +109,8 @@ export function CreateEnvironmentDialog({ onCreated }: CreateEnvironmentDialogPr
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name,
-          repoUrl: repoUrl || undefined,
+          repoUrl: selectedRepo ? selectedRepo.cloneUrl : (manualRepoUrl || undefined),
+          branch: selectedRepo ? selectedBranch : undefined,
           enablePostgres,
           enableRedis,
         }),
@@ -100,6 +135,10 @@ export function CreateEnvironmentDialog({ onCreated }: CreateEnvironmentDialogPr
       setSubmitting(false);
     }
   }
+
+  // Determine which mode to show
+  const showManualInput = !connected || manualMode || connectionLoading;
+  const showCombobox = connected && !manualMode && !connectionLoading;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -127,15 +166,70 @@ export function CreateEnvironmentDialog({ onCreated }: CreateEnvironmentDialogPr
               autoFocus
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="env-repo-url">Git Repository URL</Label>
-            <Input
-              id="env-repo-url"
-              name="repoUrl"
-              type="url"
-              placeholder="https://github.com/user/repo.git"
-            />
-          </div>
+
+          {showCombobox && (
+            <div className="space-y-2">
+              <Label>Repository</Label>
+              <RepoCombobox
+                value={selectedRepo?.fullName ?? null}
+                onSelect={handleRepoSelect}
+                disabled={submitting}
+              />
+              <button
+                type="button"
+                onClick={switchToManual}
+                className="text-sm text-muted-foreground underline cursor-pointer mt-2"
+              >
+                Enter URL manually
+              </button>
+              {selectedRepo && (
+                <div className="space-y-2">
+                  <Label>Branch</Label>
+                  <BranchSelect
+                    owner={selectedRepo.fullName.split('/')[0]}
+                    repo={selectedRepo.fullName.split('/')[1]}
+                    defaultBranch={selectedRepo.defaultBranch}
+                    value={selectedBranch}
+                    onChange={setSelectedBranch}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+
+          {showManualInput && (
+            <div className="space-y-2">
+              <Label htmlFor="env-repo-url">Git Repository URL</Label>
+              <Input
+                id="env-repo-url"
+                name="repoUrl"
+                type="url"
+                placeholder="https://github.com/user/repo.git"
+              />
+              {connected && manualMode && (
+                <button
+                  type="button"
+                  onClick={switchToGitHub}
+                  className="text-sm text-muted-foreground underline cursor-pointer mt-2"
+                >
+                  Select from GitHub
+                </button>
+              )}
+              {!connected && !connectionLoading && (
+                <p className="text-sm text-muted-foreground mt-1">
+                  Connect GitHub in{' '}
+                  <Link
+                    href="/dashboard/settings"
+                    className="text-primary underline"
+                  >
+                    Settings
+                  </Link>{' '}
+                  to browse your repos.
+                </p>
+              )}
+            </div>
+          )}
+
           <Separator />
           <div className="space-y-3">
             <Label>Sidecar Services</Label>
