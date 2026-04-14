@@ -14,7 +14,7 @@ export function EnvironmentList() {
     return (
       <>
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-xl font-semibold text-foreground">Environments</h1>
+          <h1 className="text-xl font-semibold text-foreground">Dev Environments</h1>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
@@ -49,7 +49,7 @@ export function EnvironmentList() {
   return (
     <>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-xl font-semibold text-foreground">Environments</h1>
+        <h1 className="text-xl font-semibold text-foreground">Dev Environments</h1>
         <CreateEnvironmentDialog onCreated={refetch} />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
