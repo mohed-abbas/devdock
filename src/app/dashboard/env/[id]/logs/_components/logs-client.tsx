@@ -59,8 +59,9 @@ export function LogsClient({
       return;
     }
 
-    // Connect to Socket.IO /logs namespace on same path as terminal
-    const socket = io('/logs', {
+    // Connect to Socket.IO /logs namespace on terminal server
+    const terminalServerUrl = process.env.NEXT_PUBLIC_TERMINAL_URL || 'http://localhost:3001';
+    const socket = io(`${terminalServerUrl}/logs`, {
       path: '/ws/socket.io',
       auth: { token },
       transports: ['websocket'],

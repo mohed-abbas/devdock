@@ -8,7 +8,7 @@ import { config } from '@/lib/config';
 
 const docker = new Docker({ socketPath: config.DOCKER_SOCKET });
 
-type Params = { params: Promise<{ id: string; path: string[] }> };
+type Params = { params: Promise<{ id: string; path?: string[] }> };
 
 // Headers to strip before forwarding to container (prevent session leakage)
 const STRIP_HEADERS = ['cookie', 'authorization'];
