@@ -106,10 +106,10 @@ Plans:
 **UI hint**: yes
 
 Plans:
-- [ ] 05-01-PLAN.md — Schema, encryption, OAuth utils, config extension, Octokit client, unit tests
-- [ ] 05-02-PLAN.md — OAuth API routes (authorize/callback/disconnect/connection), repo + branch listing APIs, clone modification
-- [ ] 05-03-PLAN.md — Settings page UI with GitHub connect/disconnect card, dashboard header Settings link, Toaster setup
-- [ ] 05-04-PLAN.md — Enhanced creation dialog (repo combobox, branch selector), schema push, build verification, human-verify
+- [x] 05-01-PLAN.md — Schema, encryption, OAuth utils, config extension, Octokit client, unit tests
+- [x] 05-02-PLAN.md — OAuth API routes (authorize/callback/disconnect/connection), repo + branch listing APIs, clone modification
+- [x] 05-03-PLAN.md — Settings page UI with GitHub connect/disconnect card, dashboard header Settings link, Toaster setup
+- [x] 05-04-PLAN.md — Enhanced creation dialog (repo combobox, branch selector), schema push, build verification, human-verify
 
 ### Phase 6: Dashboard & Monitoring
 **Goal**: Users have a unified web interface showing all dev environments and production apps with full lifecycle controls, logs, and preview access
