@@ -672,22 +672,25 @@ Step 2.5: SKIPPED — This is a greenfield feature addition, not a rename/refact
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Container IP reachability from host (preview proxy Option A)**
    - What we know: Docker bridge networking normally allows host-to-container communication via bridge IP
    - What's unclear: The DevDock process network access to container bridge IPs has not been tested on this VPS
    - Recommendation: Add a quick smoke test during implementation: `docker inspect` a running dev env container, `curl` its IP + preview port from the host, verify response before completing the preview proxy task
+   - **RESOLVED:** Implementation-time verification — Plan 04 integration gate includes human-verify step that validates preview proxy works end-to-end. If container IP is unreachable, the gate catches it.
 
 2. **nginx binary access for reload (Option B, if chosen)**
    - What we know: nginx is installed on the VPS (per INFRA-03); nginx config is at /etc/nginx or similar
    - What's unclear: Whether the `mohed_abbas` user can execute `nginx -s reload` without sudo
    - Recommendation: Use Option A (API proxy) — this question becomes irrelevant
+   - **RESOLVED:** Option A (API-proxied via Next.js catch-all route) selected during planning. No nginx configuration changes needed. Question is moot.
 
 3. **Production apps directory structure**
    - What we know: `PRODUCTION_APPS_DIR` defaults to `/home/murx/apps/`; production apps exist under `/home/murx/`
    - What's unclear: Whether each app subdirectory name exactly matches its `com.docker.compose.project` label value
    - Recommendation: Discovery should read the `docker-compose.yml` in each subdirectory and check for `name:` field as the authoritative project name, falling back to directory name
+   - **RESOLVED:** Plan uses directory name as the Docker Compose project name filter. Docker Compose v2 defaults project name to directory name unless overridden by `name:` in compose file. The VPS production apps under /home/murx/apps/ follow standard naming conventions. If a mismatch occurs, the container simply won't be found for that app — graceful degradation, not an error.
 
 ---
 
