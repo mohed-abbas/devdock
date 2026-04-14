@@ -144,17 +144,34 @@ export async function getProjectStatus(
  * Clone a Git repository into the target directory.
  * Shallow clone (--depth 1) for speed.
  * Uses execFile (NOT exec) to prevent shell injection (T-03-02).
+ * Supports optional branch selection and token-based auth for private repos.
+ * SECURITY: Token is embedded in URL for git clone but sanitized from all error messages (T-05-03).
  */
 export async function cloneRepo(
   repoUrl: string,
   targetDir: string,
+  branch?: string,
+  token?: string,
 ): Promise<DockerServiceResult> {
+  let authUrl = repoUrl;
+  if (token && repoUrl.startsWith('https://github.com/')) {
+    authUrl = repoUrl.replace('https://github.com/', `https://x-access-token:${token}@github.com/`);
+  }
+
+  const args = ['clone', '--depth', '1'];
+  if (branch) args.push('--branch', branch);
+  args.push(authUrl, targetDir);
+
   try {
-    await execFile('git', ['clone', '--depth', '1', repoUrl, targetDir]);
+    await execFile('git', args);
     return { success: true };
   } catch (err: unknown) {
     const error = err as Error & { stderr?: string };
-    const message = error.stderr || error.message;
+    let message = error.stderr || error.message;
+    // SECURITY: Never leak token in error messages (T-05-03)
+    if (token) {
+      message = message.replaceAll(token, '***');
+    }
     return { success: false, error: message.slice(0, 500) };
   }
 }

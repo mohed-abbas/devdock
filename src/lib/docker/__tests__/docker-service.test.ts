@@ -205,6 +205,81 @@ describe('Docker service', () => {
       );
       expect(result).toEqual({ success: true });
     });
+
+    it('clone with token builds authenticated URL using x-access-token', async () => {
+      const result = await cloneRepo('https://github.com/user/repo', '/tmp/target', undefined, 'ghp_test123');
+
+      expect(mockExecFile).toHaveBeenCalledWith(
+        'git',
+        ['clone', '--depth', '1', 'https://x-access-token:ghp_test123@github.com/user/repo', '/tmp/target'],
+        expect.any(Function)
+      );
+      expect(result).toEqual({ success: true });
+    });
+
+    it('clone with branch includes --branch flag', async () => {
+      const result = await cloneRepo('https://github.com/user/repo', '/tmp/target', 'develop');
+
+      expect(mockExecFile).toHaveBeenCalledWith(
+        'git',
+        ['clone', '--depth', '1', '--branch', 'develop', 'https://github.com/user/repo', '/tmp/target'],
+        expect.any(Function)
+      );
+      expect(result).toEqual({ success: true });
+    });
+
+    it('clone with both branch and token passes both correctly', async () => {
+      await cloneRepo('https://github.com/user/repo', '/tmp/target', 'main', 'ghp_abc');
+
+      expect(mockExecFile).toHaveBeenCalledWith(
+        'git',
+        ['clone', '--depth', '1', '--branch', 'main', 'https://x-access-token:ghp_abc@github.com/user/repo', '/tmp/target'],
+        expect.any(Function)
+      );
+    });
+
+    it('does not embed token for non-GitHub URLs', async () => {
+      await cloneRepo('https://gitlab.com/user/repo', '/tmp/target', undefined, 'ghp_test');
+
+      expect(mockExecFile).toHaveBeenCalledWith(
+        'git',
+        ['clone', '--depth', '1', 'https://gitlab.com/user/repo', '/tmp/target'],
+        expect.any(Function)
+      );
+    });
+
+    it('sanitize token from error messages on clone failure', async () => {
+      const secretToken = 'ghp_supersecrettoken123';
+      mockExecFile.mockImplementation(
+        (_cmd: string, _args: string[], callback: (err: Error | null) => void) => {
+          const error = new Error('Command failed') as Error & { stderr: string };
+          error.stderr = `fatal: Authentication failed for 'https://x-access-token:${secretToken}@github.com/user/repo'`;
+          callback(error);
+        }
+      );
+
+      const result = await cloneRepo('https://github.com/user/repo', '/tmp/target', undefined, secretToken);
+
+      expect(result.success).toBe(false);
+      expect(result.error).not.toContain(secretToken);
+      expect(result.error).toContain('***');
+    });
+
+    it('truncates error messages to 500 characters', async () => {
+      const longError = 'x'.repeat(1000);
+      mockExecFile.mockImplementation(
+        (_cmd: string, _args: string[], callback: (err: Error | null) => void) => {
+          const error = new Error('Command failed') as Error & { stderr: string };
+          error.stderr = longError;
+          callback(error);
+        }
+      );
+
+      const result = await cloneRepo('https://github.com/user/repo', '/tmp/target');
+
+      expect(result.success).toBe(false);
+      expect(result.error!.length).toBeLessThanOrEqual(500);
+    });
   });
 
   describe('removeDataDir', () => {
