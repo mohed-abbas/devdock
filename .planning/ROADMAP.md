@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 3: Environment Lifecycle** - Docker Compose environment CRUD, isolation, persistent storage, real-time status
 - [ ] **Phase 4: Web Terminal & Claude Code** - Browser terminal via xterm.js/WebSocket, Claude Code CLI, shared config mount
 - [ ] **Phase 5: GitHub Integration** - OAuth connection, repo browsing, clone-on-create, encrypted token storage
-- [ ] **Phase 6: Dashboard & Monitoring** - Unified environment/production view, logs, preview URLs, environment controls
+- [x] **Phase 6: Dashboard & Monitoring** - Unified environment/production view, logs, preview URLs, environment controls
 - [ ] **Phase 7: Resilience & Resource Management** - Memory/CPU limits, idle auto-stop, concurrent environment cap
 
 ## Phase Details
@@ -125,10 +125,10 @@ Plans:
 **UI hint**: yes
 
 Plans:
-- [ ] 06-01-PLAN.md — Backend: schema (previewPort), config (PRODUCTION_APPS_DIR), environments API update, preview proxy route, production discovery service + API
-- [ ] 06-02-PLAN.md — Log streaming: Socket.IO /logs namespace, logs token API, full-screen logs page with auto-scroll and connection states
-- [ ] 06-03-PLAN.md — Dashboard UI: environment card enhancements (Logs + Preview buttons), create dialog preview port, production app cards + list, page restructure
-- [ ] 06-04-PLAN.md — Integration gate: schema push, build verification, test suite, human-verify dashboard UI
+- [x] 06-01-PLAN.md — Backend: schema (previewPort), config (PRODUCTION_APPS_DIR), environments API update, preview proxy route, production discovery service + API
+- [x] 06-02-PLAN.md — Log streaming: Socket.IO /logs namespace, logs token API, full-screen logs page with auto-scroll and connection states
+- [x] 06-03-PLAN.md — Dashboard UI: environment card enhancements (Logs + Preview buttons), create dialog preview port, production app cards + list, page restructure
+- [x] 06-04-PLAN.md — Integration gate: schema push, build verification, test suite, human-verify dashboard UI
 
 ### Phase 7: Resilience & Resource Management
 **Goal**: The platform safely manages VPS resources by enforcing per-environment limits, stopping idle environments, and capping concurrency to prevent system-wide failures
@@ -156,5 +156,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 3. Environment Lifecycle | 0/4 | Not started | - |
 | 4. Web Terminal & Claude Code | 0/3 | Not started | - |
 | 5. GitHub Integration | 0/4 | Not started | - |
-| 6. Dashboard & Monitoring | 0/4 | Not started | - |
+| 6. Dashboard & Monitoring | 4/4 | Complete | 2026-04-14 |
 | 7. Resilience & Resource Management | 0/2 | Not started | - |

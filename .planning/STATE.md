@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 6 UI-SPEC approved
-last_updated: "2026-04-14T13:53:33.359Z"
-last_activity: 2026-04-14 -- Phase 06 planning complete
+stopped_at: Phase 6 complete
+last_updated: "2026-04-14T15:05:00.000Z"
+last_activity: 2026-04-14 -- Phase 06 execution complete
 progress:
   total_phases: 7
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 21
-  completed_plans: 17
-  percent: 81
+  completed_plans: 21
+  percent: 100
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-08)
 
 **Core value:** Enable productive remote development on any project from anywhere so a Claude Code Max subscription isn't wasted
-**Current focus:** Phase 04 — web-terminal-claude-code
+**Current focus:** Phase 06 — dashboard-monitoring (complete)
 
 ## Current Position
 
-Phase: 6
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-04-14 -- Phase 06 planning complete
+Phase: 6 (complete)
+Plan: 4/4
+Status: Complete
+Last activity: 2026-04-14 -- Phase 06 execution complete, all plans verified
 
 Progress: [██████████] 100%
 
@@ -91,6 +91,11 @@ Recent decisions affecting current work:
 - [Phase 03-environment-lifecycle]: Dashboard _components directory pattern for page-specific client components
 - [Phase 03-environment-lifecycle]: Externalize dockerode/ssh2 via serverExternalPackages for Next.js build (native addons cannot be bundled)
 - [Phase 03-environment-lifecycle]: Raise fs.inotify.max_user_watches on VPS so next dev can boot
+- [Phase 06-dashboard-monitoring]: API-proxied preview route (no nginx config regeneration needed)
+- [Phase 06-dashboard-monitoring]: Preview proxy returns 404 (not 403) for unauthorized environments to avoid information disclosure
+- [Phase 06-dashboard-monitoring]: Reuse terminal server Socket.IO instance for /logs namespace (same HMAC auth pattern)
+- [Phase 06-dashboard-monitoring]: Docker log demux via docker.modem.demuxStream() to prevent binary garbage
+- [Phase 06-dashboard-monitoring]: Exclude data/ from tsconfig to prevent dev environment workspaces from breaking builds
 
 ### Pending Todos
 
