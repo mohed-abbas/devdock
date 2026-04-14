@@ -35,6 +35,7 @@ export function CreateEnvironmentDialog({ onCreated }: CreateEnvironmentDialogPr
   const [selectedRepo, setSelectedRepo] = useState<RepoItem | null>(null);
   const [selectedBranch, setSelectedBranch] = useState('');
   const [manualMode, setManualMode] = useState(false);
+  const [previewPort, setPreviewPort] = useState<string>('');
   const formRef = useRef<HTMLFormElement>(null);
 
   const { connected, loading: connectionLoading } = useGitHubConnection();
@@ -47,6 +48,7 @@ export function CreateEnvironmentDialog({ onCreated }: CreateEnvironmentDialogPr
     setSelectedRepo(null);
     setSelectedBranch('');
     setManualMode(false);
+    setPreviewPort('');
     formRef.current?.reset();
   }
 
@@ -101,6 +103,15 @@ export function CreateEnvironmentDialog({ onCreated }: CreateEnvironmentDialogPr
       }
     }
 
+    // Validate preview port if provided
+    if (previewPort) {
+      const port = parseInt(previewPort, 10);
+      if (isNaN(port) || port < 1 || port > 65535) {
+        setError('Preview port must be between 1 and 65535.');
+        return;
+      }
+    }
+
     setSubmitting(true);
 
     try {
@@ -113,6 +124,7 @@ export function CreateEnvironmentDialog({ onCreated }: CreateEnvironmentDialogPr
           branch: selectedRepo ? selectedBranch : undefined,
           enablePostgres,
           enableRedis,
+          previewPort: previewPort ? parseInt(previewPort, 10) : undefined,
         }),
       });
 
@@ -229,6 +241,22 @@ export function CreateEnvironmentDialog({ onCreated }: CreateEnvironmentDialogPr
               )}
             </div>
           )}
+
+          <div className="space-y-2">
+            <Label htmlFor="env-preview-port">Preview Port</Label>
+            <Input
+              id="env-preview-port"
+              type="number"
+              min={1}
+              max={65535}
+              placeholder="3000"
+              value={previewPort}
+              onChange={(e) => setPreviewPort(e.target.value)}
+            />
+            <p className="text-sm text-muted-foreground">
+              Port your app listens on inside the container (optional)
+            </p>
+          </div>
 
           <Separator />
           <div className="space-y-3">

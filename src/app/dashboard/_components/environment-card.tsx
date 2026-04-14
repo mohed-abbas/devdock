@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardAction, CardFooter } 
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from './status-badge';
 import { DeleteEnvironmentDialog } from './delete-environment-dialog';
-import { Play, Square, Trash2, TerminalSquare } from 'lucide-react';
+import { Play, Square, Trash2, TerminalSquare, ScrollText, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import type { Environment } from '@/hooks/use-environments';
 
@@ -88,6 +88,33 @@ export function EnvironmentCard({ environment, onRefetch }: EnvironmentCardProps
           {formatRelativeTime(environment.createdAt)}
         </span>
         <div className="flex items-center gap-2">
+          {/* Preview button — visible when running AND previewPort is set (D-12) */}
+          {environment.status === 'running' && environment.previewPort !== null && (
+            <a
+              href={`/api/environments/${environment.id}/preview/`}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Open preview"
+              title="Open preview"
+            >
+              <Button variant="outline" size="sm">
+                <ExternalLink className="size-4" />
+              </Button>
+            </a>
+          )}
+          {/* Logs button — visible when running (D-09) */}
+          {environment.status === 'running' && (
+            <Link
+              href={`/dashboard/env/${environment.id}/logs`}
+              aria-label="View logs"
+              title="View logs"
+            >
+              <Button variant="outline" size="sm">
+                <ScrollText className="size-4" />
+              </Button>
+            </Link>
+          )}
+          {/* Terminal button — existing, visible when running */}
           {environment.status === 'running' && (
             <Link
               href={`/dashboard/env/${environment.id}/terminal`}
