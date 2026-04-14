@@ -53,14 +53,16 @@ Exceptions: none
 
 ## Typography
 
-Four roles, matching existing codebase usage.
+Three declared roles plus one monospace variant. Display (28px) is not declared for this phase.
 
 | Role | Size | Weight | Line Height | Usage |
 |------|------|--------|-------------|-------|
-| Body | 16px | 400 (regular) | 1.5 | Muted descriptions, timestamps, log lines, empty state body |
+| Body | 16px | 400 (regular) | 1.5 | Muted descriptions, timestamps, empty state body |
 | Label | 14px | 400 (regular) | 1.5 | Card descriptions, status badge text, button labels, metadata |
 | Heading | 20px | 600 (semibold) | 1.2 | Page section headers ("Dev Environments", "Production Apps") |
-| Display | 28px | 600 (semibold) | 1.2 | Not used in this phase |
+| Display | 28px | 600 (semibold) | 1.2 | **Not declared for this phase** |
+
+Active sizes for this phase: 13px (log viewer mono), 14px (label/card title), 16px (body), 20px (heading). Total: 4.
 
 Notes:
 - StatusBadge uses 14px semibold uppercase tracking-wide — existing pattern preserved.
@@ -260,7 +262,7 @@ Same Card component as EnvironmentCard. No CardFooter actions — read-only.
 | Connecting | Spinner in header area, log area blank |
 | Connected | No indicator (streaming begins) |
 | Reconnecting | Amber overlay text "Reconnecting..." centered in log area |
-| Disconnected | Error overlay with "Retry" button (matches terminal ReconnectOverlay pattern) |
+| Disconnected | Error overlay with "Retry connection" button (matches terminal ReconnectOverlay pattern) |
 
 ---
 
@@ -281,9 +283,11 @@ Same Card component as EnvironmentCard. No CardFooter actions — read-only.
 | Logs reconnecting overlay | "Reconnecting to log stream..." |
 | Logs disconnected overlay heading | "Connection lost" |
 | Logs disconnected overlay body | "Could not connect to the log stream. Check that the environment is running." |
-| Logs disconnected retry button | "Retry" |
+| Logs disconnected retry button | "Retry connection" |
 | Preview button tooltip | "Open preview" (title attribute) |
+| Preview button aria-label | `aria-label="Open preview"` (icon-only button) |
 | Logs button tooltip | "View logs" (title attribute) |
+| Logs button aria-label | `aria-label="View logs"` (icon-only button) |
 | Preview port field label | "Preview Port" |
 | Preview port helper text | "Port your app listens on inside the container (optional)" |
 | Preview port placeholder | "3000" |
