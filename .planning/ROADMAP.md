@@ -121,13 +121,14 @@ Plans:
   3. Dashboard shows production apps from /home/murx/apps/ as read-only entries alongside dev environments
   4. User can view live-streamed container logs in the web UI for any running environment
   5. User can access web apps running inside containers via preview URLs (port forwarding through the platform)
-**Plans**: TBD
+**Plans**: 4 plans
 **UI hint**: yes
 
 Plans:
-- [ ] 06-01: TBD
-- [ ] 06-02: TBD
-- [ ] 06-03: TBD
+- [ ] 06-01-PLAN.md — Backend: schema (previewPort), config (PRODUCTION_APPS_DIR), environments API update, preview proxy route, production discovery service + API
+- [ ] 06-02-PLAN.md — Log streaming: Socket.IO /logs namespace, logs token API, full-screen logs page with auto-scroll and connection states
+- [ ] 06-03-PLAN.md — Dashboard UI: environment card enhancements (Logs + Preview buttons), create dialog preview port, production app cards + list, page restructure
+- [ ] 06-04-PLAN.md — Integration gate: schema push, build verification, test suite, human-verify dashboard UI
 
 ### Phase 7: Resilience & Resource Management
 **Goal**: The platform safely manages VPS resources by enforcing per-environment limits, stopping idle environments, and capping concurrency to prevent system-wide failures
@@ -155,5 +156,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 3. Environment Lifecycle | 0/4 | Not started | - |
 | 4. Web Terminal & Claude Code | 0/3 | Not started | - |
 | 5. GitHub Integration | 0/4 | Not started | - |
-| 6. Dashboard & Monitoring | 0/3 | Not started | - |
+| 6. Dashboard & Monitoring | 0/4 | Not started | - |
 | 7. Resilience & Resource Management | 0/2 | Not started | - |
