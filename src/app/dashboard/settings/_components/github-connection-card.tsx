@@ -53,7 +53,7 @@ export function GitHubConnectionCard() {
     const success = searchParams.get('github_success');
     const error = searchParams.get('github_error');
 
-    if (success === 'true') {
+    if (success === 'connected') {
       toast.success('GitHub connected.');
       // Clean URL params without reload
       window.history.replaceState({}, '', '/dashboard/settings');
