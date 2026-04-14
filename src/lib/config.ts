@@ -16,6 +16,7 @@ const envSchema = z.object({
   GITHUB_CLIENT_SECRET: z.string().min(1).optional(),
   GITHUB_TOKEN_ENCRYPTION_KEY: z.string().regex(/^[0-9a-f]{64}$/i,
     'Must be 64 hex chars (32 bytes). Generate with: openssl rand -hex 32').optional(),
+  PRODUCTION_APPS_DIR: z.string().optional().default(''),
 });
 
 export type Config = z.infer<typeof envSchema>;

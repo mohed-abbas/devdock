@@ -13,6 +13,7 @@ export interface Environment {
   composeConfig: { enablePostgres: boolean; enableRedis: boolean } | null;
   dockerProjectName: string | null;
   networkName: string | null;
+  previewPort: number | null;
   createdAt: string;
   updatedAt: string;
 }
