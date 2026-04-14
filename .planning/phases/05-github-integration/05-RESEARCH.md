@@ -455,19 +455,19 @@ const branches = await octokit.paginate(octokit.repos.listBranches, {
 | A3 | `x-access-token:TOKEN@github.com` URL pattern works for cloning | Code Examples | Well-documented pattern, but if GitHub changes auth URL format, clones break. Low risk. |
 | A4 | GitHub OAuth config vars should be optional (not required) | Code Examples | If required, DevDock would fail to start without GitHub configured. Optional is better for development/testing. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **GitHub OAuth App Registration**
+1. **GitHub OAuth App Registration** — RESOLVED: Setup instructions included in Plan 04 user_setup; callback URL documented as `https://{domain}/api/github/callback`
    - What we know: Need a GitHub OAuth App with client ID and secret
    - What is unclear: Whether the user has already created one, or if documentation for setup is needed
    - Recommendation: Include setup instructions in env var documentation. Callback URL will be `https://{domain}/api/github/callback`
 
-2. **Repo Pagination Cap**
+2. **Repo Pagination Cap** — RESOLVED: Cap at 500 repos via `octokit.paginate` with `done()` callback in Plan 02
    - What we know: D-05 says "works well for up to ~500 repos". GitHub API returns 100 per page.
    - What is unclear: Whether to cap at 500 or fetch all (could be thousands for org members)
    - Recommendation: Use `octokit.paginate` but cap at 500 repos (5 pages). Most users will have fewer. Display a note if capped.
 
-3. **Environment Creation API Modification**
+3. **Environment Creation API Modification** — RESOLVED: Pass cloneUrl from client, add branch to schema, resolve token server-side in Plan 02 Task 1
    - What we know: The creation dialog needs to pass `repoUrl` and `branch` to the existing POST /api/environments
    - What is unclear: Whether the API should also accept a `githubRepoFullName` and resolve the clone URL server-side
    - Recommendation: Pass the clone URL directly from the client (already selected from repo list). The API already accepts `repoUrl`. Add `branch` to the create schema. Resolve the auth token server-side from `github_accounts`.
