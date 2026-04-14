@@ -12,6 +12,10 @@ const envSchema = z.object({
   ANTHROPIC_API_KEY: z.string().optional(),
   CLAUDE_CONFIG_PATH: z.string().optional().default(''),
   TERMINAL_PORT: z.coerce.number().int().min(1024).default(3001),
+  GITHUB_CLIENT_ID: z.string().min(1).optional(),
+  GITHUB_CLIENT_SECRET: z.string().min(1).optional(),
+  GITHUB_TOKEN_ENCRYPTION_KEY: z.string().regex(/^[0-9a-f]{64}$/i,
+    'Must be 64 hex chars (32 bytes). Generate with: openssl rand -hex 32').optional(),
 });
 
 export type Config = z.infer<typeof envSchema>;

@@ -50,3 +50,13 @@ export const environments = pgTable('environments', {
 }, (table) => [
   uniqueIndex('env_slug_user_idx').on(table.slug, table.userId),
 ]);
+
+export const githubAccounts = pgTable('github_accounts', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }).unique(),
+  githubUsername: varchar('github_username', { length: 255 }).notNull(),
+  avatarUrl: text('avatar_url'),
+  encryptedAccessToken: text('encrypted_access_token').notNull(),
+  scopes: text('scopes'),
+  connectedAt: timestamp('connected_at').defaultNow().notNull(),
+});
