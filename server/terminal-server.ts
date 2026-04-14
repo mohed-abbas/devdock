@@ -1,6 +1,8 @@
 import express from 'express';
 import { createServer } from 'http';
+import { PassThrough } from 'stream';
 import { Server } from 'socket.io';
+import Docker from 'dockerode';
 import { verifySignedToken, type TokenPayload } from './terminal-auth';
 import { createExecSession, resizeExec } from '../src/lib/docker/docker-service';
 
@@ -8,6 +10,8 @@ const app = express();
 const httpServer = createServer(app);
 
 const DEVDOCK_URL = process.env.DEVDOCK_URL || process.env.AUTH_URL || 'http://localhost:3000';
+
+const docker = new Docker({ socketPath: process.env.DOCKER_SOCKET || '/var/run/docker.sock' });
 
 const io = new Server(httpServer, {
   path: '/ws/socket.io',
@@ -135,6 +139,89 @@ terminalNs.on('connection', (socket) => {
         }
       }
       socketSessions.delete(socket.id);
+    }
+  });
+});
+
+// === Logs Namespace (D-08: reuse terminal server for log streaming) ===
+const logsNs = io.of('/logs');
+
+// Auth middleware — identical to terminal namespace
+logsNs.use((socket, next) => {
+  const token = (socket.handshake.auth?.token as string) ||
+                (socket.handshake.query?.token as string);
+
+  if (!token) {
+    return next(new Error('Authentication required'));
+  }
+
+  const payload = verifySignedToken(token);
+  if (!payload) {
+    return next(new Error('Invalid or expired token'));
+  }
+
+  socket.data.environmentId = payload.environmentId;
+  socket.data.userId = payload.userId;
+  socket.data.containerId = payload.containerId;
+  next();
+});
+
+// Track log streams per socket for cleanup
+const logStreams = new Map<string, { stream: NodeJS.ReadableStream; passthrough: PassThrough }>();
+
+logsNs.on('connection', async (socket) => {
+  const { containerId } = socket.data;
+
+  try {
+    const container = docker.getContainer(containerId);
+    const stream = await container.logs({
+      follow: true,
+      stdout: true,
+      stderr: true,
+      tail: 200,
+      timestamps: false,
+    });
+
+    // Demux stdout/stderr into single PassThrough (Pitfall 1: binary garbage without demux)
+    const passthrough = new PassThrough();
+    docker.modem.demuxStream(stream as NodeJS.ReadableStream, passthrough, passthrough);
+
+    logStreams.set(socket.id, {
+      stream: stream as NodeJS.ReadableStream,
+      passthrough,
+    });
+
+    passthrough.on('data', (chunk: Buffer) => {
+      socket.emit('logs:data', { data: chunk.toString('utf-8') });
+    });
+
+    // Handle stream end (container stopped)
+    passthrough.on('end', () => {
+      socket.emit('logs:end', {});
+    });
+
+    // Also handle the raw stream end/error
+    (stream as NodeJS.ReadableStream).on('end', () => {
+      passthrough.end();
+    });
+    (stream as NodeJS.ReadableStream).on('error', () => {
+      passthrough.end();
+    });
+  } catch (err) {
+    socket.emit('logs:error', { message: 'Failed to attach to container logs' });
+  }
+
+  // Cleanup on disconnect
+  socket.on('disconnect', () => {
+    const entry = logStreams.get(socket.id);
+    if (entry) {
+      try {
+        (entry.stream as NodeJS.ReadableStream & { destroy?: () => void }).destroy?.();
+        entry.passthrough.destroy();
+      } catch {
+        // Already destroyed
+      }
+      logStreams.delete(socket.id);
     }
   });
 });
