@@ -153,7 +153,7 @@ export async function generateComposeFile(
 
   // Write compose file
   const composePath = path.join(projectDir, 'docker-compose.yml');
-  await writeFile(composePath, template, 'utf-8');
+  await writeFile(composePath, template, { encoding: 'utf-8', mode: 0o600 });
 
   return composePath;
 }
