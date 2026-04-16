@@ -83,6 +83,10 @@ terminalNs.on('connection', (socket) => {
           sessionIndex,
           data: chunk.toString('utf-8'),
         });
+        // Forward exec output to /logs namespace subscribers watching the same container
+        logsNs.to(`container:${containerId}`).emit('logs:data', {
+          data: chunk.toString('utf-8'),
+        });
       });
 
       // Handle stream end
@@ -171,6 +175,9 @@ const logStreams = new Map<string, { stream: NodeJS.ReadableStream; passthrough:
 
 logsNs.on('connection', async (socket) => {
   const { containerId } = socket.data;
+
+  // Join the container room so exec output from /terminal can be broadcast here
+  socket.join(`container:${containerId}`);
 
   try {
     const container = docker.getContainer(containerId);
