@@ -27,8 +27,7 @@ const terminalNs = io.of('/terminal');
 
 // Auth middleware (D-05): validate signed token before connection
 terminalNs.use((socket, next) => {
-  const token = (socket.handshake.auth?.token as string) ||
-                (socket.handshake.query?.token as string);
+  const token = socket.handshake.auth?.token as string | undefined;
 
   if (!token) {
     return next(new Error('Authentication required'));

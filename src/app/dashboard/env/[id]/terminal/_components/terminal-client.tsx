@@ -36,6 +36,8 @@ export function TerminalClient({
   const [connectionState, setConnectionState] = useState<
     'connecting' | 'connected' | 'reconnecting' | 'disconnected'
   >('connecting');
+  const tabsRef = useRef<TabInfo[]>([]);
+  tabsRef.current = tabs;
   const nextTabIdRef = useRef(1);
   const socketRef = useRef<Socket | null>(null);
   const pendingTabRef = useRef<number | null>(null);
@@ -128,13 +130,10 @@ export function TerminalClient({
 
     // Exec session ended
     socket.on('exec:exit', ({ sessionIndex }: { sessionIndex: number }) => {
-      setTabs((prev) => {
-        const tab = prev.find((t) => t.sessionIndex === sessionIndex);
-        if (tab) {
-          closeTabById(tab.id);
-        }
-        return prev;
-      });
+      const tab = tabsRef.current.find((t) => t.sessionIndex === sessionIndex);
+      if (tab) {
+        closeTabById(tab.id);
+      }
     });
 
     // Error from server

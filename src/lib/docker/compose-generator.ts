@@ -114,12 +114,12 @@ export async function generateComposeFile(
   template = template.replace(/\{\{HOST_UID\}\}/g, String(options.hostUid));
   template = template.replace(/\{\{HOST_GID\}\}/g, String(options.hostGid));
 
-  // Claude config mount (D-07, D-09): read-write so Claude Code can write session files
+  // Claude config mount (D-07, D-09): read-only to protect host config
   const claudeConfigPath = options.claudeConfigPath;
   if (claudeConfigPath) {
     template = template.replace(
       /\{\{CLAUDE_CONFIG_MOUNT\}\}/g,
-      `- ${claudeConfigPath}:/home/dev/.claude`,
+      `- ${claudeConfigPath}:/home/dev/.claude:ro`,
     );
   } else {
     // Remove the mount placeholder line entirely
