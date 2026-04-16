@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 3: Environment Lifecycle** - Docker Compose environment CRUD, isolation, persistent storage, real-time status
 - [ ] **Phase 4: Web Terminal & Claude Code** - Browser terminal via xterm.js/WebSocket, Claude Code CLI, shared config mount
 - [ ] **Phase 5: GitHub Integration** - OAuth connection, repo browsing, clone-on-create, encrypted token storage
-- [x] **Phase 6: Dashboard & Monitoring** - Unified environment/production view, logs, preview URLs, environment controls
+- [ ] **Phase 6: Dashboard & Monitoring** - Unified environment/production view, logs, preview URLs, environment controls
 - [ ] **Phase 7: Resilience & Resource Management** - Memory/CPU limits, idle auto-stop, concurrent environment cap
 
 ## Phase Details
@@ -121,7 +121,7 @@ Plans:
   3. Dashboard shows production apps from /home/murx/apps/ as read-only entries alongside dev environments
   4. User can view live-streamed container logs in the web UI for any running environment
   5. User can access web apps running inside containers via preview URLs (port forwarding through the platform)
-**Plans**: 4 plans
+**Plans**: 6 plans
 **UI hint**: yes
 
 Plans:
@@ -129,6 +129,8 @@ Plans:
 - [x] 06-02-PLAN.md — Log streaming: Socket.IO /logs namespace, logs token API, full-screen logs page with auto-scroll and connection states
 - [x] 06-03-PLAN.md — Dashboard UI: environment card enhancements (Logs + Preview buttons), create dialog preview port, production app cards + list, page restructure
 - [x] 06-04-PLAN.md — Integration gate: schema push, build verification, test suite, human-verify dashboard UI
+- [x] 06-05-PLAN.md — Gap closure: bridge exec output from /terminal to /logs namespace for live log streaming
+- [ ] 06-06-PLAN.md — Gap closure: subdomain-based preview proxy replacing broken path-based proxy (D-17/D-18/D-19)
 
 ### Phase 7: Resilience & Resource Management
 **Goal**: The platform safely manages VPS resources by enforcing per-environment limits, stopping idle environments, and capping concurrency to prevent system-wide failures
@@ -168,5 +170,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 3. Environment Lifecycle | 0/4 | Not started | - |
 | 4. Web Terminal & Claude Code | 0/3 | Not started | - |
 | 5. GitHub Integration | 0/4 | Not started | - |
-| 6. Dashboard & Monitoring | 4/4 | Complete | 2026-04-14 |
+| 6. Dashboard & Monitoring | 5/6 | Gap closure | - |
 | 7. Resilience & Resource Management | 0/2 | Not started | - |
