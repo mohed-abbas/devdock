@@ -128,7 +128,7 @@ For Claude Code CLI to work inside spawned containers, set either in `.env.local
 ```bash
 npm run build
 npm start              # Next.js (+ middleware, API routes)
-npm run terminal:dev   # run the terminal server under your process manager
+npm run terminal:dev   # tsx is used for both dev and prod in this project
 ```
 
 On the VPS, wire both under systemd and put Caddy or nginx in front for HTTPS
