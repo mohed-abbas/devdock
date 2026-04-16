@@ -9,10 +9,12 @@ import { config } from '@/lib/config';
 import { generateSlug, isValidSlug } from '@/lib/docker/slug';
 import { generateComposeFile } from '@/lib/docker/compose-generator';
 import { composeUp, cloneRepo, getProjectStatus } from '@/lib/docker/docker-service';
+import { githubAccounts } from '@/lib/db/schema';
 
 const createSchema = z.object({
   name: z.string().min(1, 'Name is required.').max(100),
   repoUrl: z.string().url('Please enter a valid URL.').optional().or(z.literal('')),
+  branch: z.string().max(255).optional(),
   enablePostgres: z.boolean().default(false),
   enableRedis: z.boolean().default(false),
 });
@@ -162,6 +164,7 @@ export async function POST(request: NextRequest) {
       name: parsed.data.name,
       slug,
       repoUrl: parsed.data.repoUrl || null,
+      branch: parsed.data.branch || null,
       status: 'starting',
       composeConfig: {
         enablePostgres: parsed.data.enablePostgres,
@@ -202,9 +205,24 @@ export async function POST(request: NextRequest) {
 
       // Clone repo if URL provided
       if (repoUrl && repoUrl !== '') {
+        // Look up GitHub token for private repo auth
+        let ghToken: string | undefined;
+        const [ghAccount] = await db
+          .select({ encryptedAccessToken: githubAccounts.encryptedAccessToken })
+          .from(githubAccounts)
+          .where(eq(githubAccounts.userId, session.user.id))
+          .limit(1);
+
+        if (ghAccount && config.GITHUB_TOKEN_ENCRYPTION_KEY) {
+          const { decrypt } = await import('@/lib/github/encryption');
+          ghToken = decrypt(ghAccount.encryptedAccessToken, config.GITHUB_TOKEN_ENCRYPTION_KEY);
+        }
+
         const cloneResult = await cloneRepo(
           repoUrl,
           path.join(config.DEVDOCK_DATA_DIR, slug, 'workspace'),
+          parsed.data.branch || undefined,
+          ghToken,
         );
         if (!cloneResult.success) {
           await db

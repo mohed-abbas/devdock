@@ -99,7 +99,10 @@ export function TerminalClient({
     });
 
     socket.on('connect_error', () => {
-      setConnectionState('disconnected');
+      // Use functional updater to avoid stale closure over connectionState
+      setConnectionState((prev) =>
+        prev === 'connecting' ? 'disconnected' : prev
+      );
     });
 
     // Server created the exec session

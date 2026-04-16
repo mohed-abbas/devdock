@@ -1,5 +1,5 @@
-import { LogoutButton } from '@/components/auth/logout-button';
 import { auth } from '@/auth';
+import { HeaderNav } from './_components/header-nav';
 
 export default async function DashboardLayout({
   children,
@@ -13,13 +13,7 @@ export default async function DashboardLayout({
       {/* Sticky header per UI-SPEC */}
       <header className="sticky top-0 z-50 h-16 border-b border-border bg-card px-6 flex items-center justify-between">
         <span className="text-sm font-semibold text-foreground">DevDock</span>
-        <div className="flex items-center gap-4">
-          {/* Username hidden on mobile, shown on sm+ per UI-SPEC responsive */}
-          <span className="hidden sm:block text-sm text-muted-foreground">
-            {session?.user?.name}
-          </span>
-          <LogoutButton />
-        </div>
+        <HeaderNav username={session?.user?.name ?? undefined} />
       </header>
       {children}
     </div>

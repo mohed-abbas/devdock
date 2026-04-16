@@ -102,13 +102,14 @@ Plans:
   2. User can browse their accessible repositories (including private repos) from within DevDock
   3. User can select a repo when creating an environment — the repo is cloned into the new environment automatically
   4. GitHub OAuth tokens are stored encrypted at rest in the database — not in plaintext
-**Plans**: TBD
+**Plans**: 4 plans
 **UI hint**: yes
 
 Plans:
-- [ ] 05-01: TBD
-- [ ] 05-02: TBD
-- [ ] 05-03: TBD
+- [x] 05-01-PLAN.md — Schema, encryption, OAuth utils, config extension, Octokit client, unit tests
+- [x] 05-02-PLAN.md — OAuth API routes (authorize/callback/disconnect/connection), repo + branch listing APIs, clone modification
+- [x] 05-03-PLAN.md — Settings page UI with GitHub connect/disconnect card, dashboard header Settings link, Toaster setup
+- [x] 05-04-PLAN.md — Enhanced creation dialog (repo combobox, branch selector), schema push, build verification, human-verify
 
 ### Phase 6: Dashboard & Monitoring
 **Goal**: Users have a unified web interface showing all dev environments and production apps with full lifecycle controls, logs, and preview access
@@ -153,6 +154,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 2. Authentication | 3/3 | Complete | 2026-04-09 |
 | 3. Environment Lifecycle | 0/4 | Not started | - |
 | 4. Web Terminal & Claude Code | 0/3 | Not started | - |
-| 5. GitHub Integration | 0/3 | Not started | - |
+| 5. GitHub Integration | 0/4 | Not started | - |
 | 6. Dashboard & Monitoring | 0/3 | Not started | - |
 | 7. Resilience & Resource Management | 0/2 | Not started | - |
