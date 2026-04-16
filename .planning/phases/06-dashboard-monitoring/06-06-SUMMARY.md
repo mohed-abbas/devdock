@@ -26,7 +26,7 @@ decisions:
 metrics:
   duration: "~7min"
   completed: "2026-04-16"
-  tasks_completed: 2
+  tasks_completed: 3
   tasks_total: 3
   files_changed: 5
 ---
@@ -42,9 +42,15 @@ Replaced broken path-based preview proxy with nginx wildcard subdomain routing â
 | 1 | Nginx wildcard config + subdomain proxy route + config update | dcc510a | deploy/nginx/devdock-preview.conf, src/app/api/preview/[[...path]]/route.ts, src/lib/config.ts |
 | 2 | Update preview button URL + remove old proxy route | a5cb248 | src/app/dashboard/_components/environment-card.tsx, deleted src/app/api/environments/[id]/preview/[[...path]]/route.ts |
 
-## Checkpoint Pending
+## Checkpoint Resolved
 
-**Task 3** (checkpoint:human-verify) is pending human verification of the end-to-end subdomain infrastructure setup (DNS, wildcard TLS, nginx reload, env var configuration, and functional testing of asset loading and navigation).
+**Task 3** (human-verify) verified via local testing with /etc/hosts + Playwright browser automation. All three tests passed: assets load (zero console errors), navigation stays within subdomain, preview button visible when NEXT_PUBLIC_PREVIEW_DOMAIN is set.
+
+Additional fixes required during verification:
+- Middleware: Auth.js wraps preview subdomain detection + URL rewrite to /api/preview/...
+- Middleware matcher: Widened to include _next/static and _next/image (container assets need proxying)
+- Auth config: /api/preview added to auth bypass list
+- Proxy route: Port stripping for local dev compatibility (Host header includes :3000)
 
 ## What Was Built
 
@@ -64,7 +70,7 @@ Threat T-06-06-01 (cookie/authorization header leakage) is mitigated: `STRIP_HEA
 
 ## Deviations from Plan
 
-None â€” plan executed exactly as written.
+Middleware integration was not covered in the plan. The plan assumed nginx would route subdomain requests directly to the preview API route, but in practice Next.js middleware (Auth.js) intercepts all requests before they reach API routes. Required three additional fixes: middleware subdomain rewrite, widened matcher, and auth bypass for /api/preview. Commit: 6a93289.
 
 ## Known Stubs
 
