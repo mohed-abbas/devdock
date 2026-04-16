@@ -13,6 +13,14 @@ import type { Environment } from '@/hooks/use-environments';
 function getPreviewUrl(envId: string): string | null {
   const previewDomain = process.env.NEXT_PUBLIC_PREVIEW_DOMAIN;
   if (!previewDomain) return null;
+  // SSR note: `EnvironmentCard` is only rendered inside the `'use client'`
+  // `EnvironmentList`, which starts with `environments = []` and populates
+  // from `useEnvironments()` on the client. No cards render during SSR, so
+  // `window` is always defined when this runs today. The `'https:'` fallback
+  // is kept as a harmless safety net in case the render path changes (e.g.,
+  // environments ever get pre-fetched server-side); if that happens, prefer
+  // a `useEffect`-gated mounted flag to avoid a hydration mismatch on local
+  // `http://` setups.
   const protocol =
     typeof window !== 'undefined' ? window.location.protocol : 'https:';
   return `${protocol}//${envId}.${previewDomain}`;
