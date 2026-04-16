@@ -165,7 +165,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
       previewPort,
       updatedAt: new Date(),
     })
-    .where(eq(environments.id, id))
+    .where(and(eq(environments.id, id), eq(environments.userId, session.user.id)))
     .returning();
 
   return NextResponse.json(updated);
