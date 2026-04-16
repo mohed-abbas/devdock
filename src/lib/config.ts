@@ -17,6 +17,10 @@ const envSchema = z.object({
   GITHUB_TOKEN_ENCRYPTION_KEY: z.string().regex(/^[0-9a-f]{64}$/i,
     'Must be 64 hex chars (32 bytes). Generate with: openssl rand -hex 32').optional(),
   PRODUCTION_APPS_DIR: z.string().optional().default(''),
+  PREVIEW_DOMAIN: z.string().optional().default(''),
+  // Note: NEXT_PUBLIC_PREVIEW_DOMAIN must also be set for the client-side preview button.
+  // It should match PREVIEW_DOMAIN (e.g., "preview.devdock.example.com").
+  // Next.js public env vars are not validated here -- they are inlined at build time.
 });
 
 export type Config = z.infer<typeof envSchema>;
