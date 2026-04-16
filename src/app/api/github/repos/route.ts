@@ -50,11 +50,13 @@ export async function GET() {
     const octokit = createOctokit(account.encryptedAccessToken, config.GITHUB_TOKEN_ENCRYPTION_KEY);
 
     // Paginate up to 500 repos (5 pages of 100), sorted by pushed_at desc (D-06)
+    let total = 0;
     const repos = await octokit.paginate(
       octokit.rest.repos.listForAuthenticatedUser,
       { sort: 'pushed', direction: 'desc', per_page: 100, type: 'all' },
       (response, done) => {
-        if (response.data.length >= 500) done();
+        total += response.data.length;
+        if (total >= 500) done();
         return response.data;
       },
     );
