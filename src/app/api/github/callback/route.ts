@@ -53,15 +53,17 @@ export async function GET(request: NextRequest) {
 
     const encryptedToken = encrypt(tokenData.access_token, config.GITHUB_TOKEN_ENCRYPTION_KEY);
 
-    // Upsert: delete old then insert (userId is unique)
-    await db.delete(githubAccounts).where(eq(githubAccounts.userId, session.user.id));
-    await db.insert(githubAccounts).values({
-      userId: session.user.id,
-      githubUsername: ghUser.login,
-      avatarUrl: ghUser.avatar_url,
-      encryptedAccessToken: encryptedToken,
-      scopes: tokenData.scope,
-      connectedAt: new Date(),
+    // Upsert: delete old then insert within a transaction for atomicity
+    await db.transaction(async (tx) => {
+      await tx.delete(githubAccounts).where(eq(githubAccounts.userId, session.user.id));
+      await tx.insert(githubAccounts).values({
+        userId: session.user.id,
+        githubUsername: ghUser.login,
+        avatarUrl: ghUser.avatar_url,
+        encryptedAccessToken: encryptedToken,
+        scopes: tokenData.scope,
+        connectedAt: new Date(),
+      });
     });
 
     settingsUrl.searchParams.set('github_success', 'connected');
