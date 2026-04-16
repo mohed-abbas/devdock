@@ -130,7 +130,7 @@ Plans:
 - [x] 06-03-PLAN.md — Dashboard UI: environment card enhancements (Logs + Preview buttons), create dialog preview port, production app cards + list, page restructure
 - [x] 06-04-PLAN.md — Integration gate: schema push, build verification, test suite, human-verify dashboard UI
 - [x] 06-05-PLAN.md — Gap closure: bridge exec output from /terminal to /logs namespace for live log streaming
-- [ ] 06-06-PLAN.md — Gap closure: subdomain-based preview proxy replacing broken path-based proxy (D-17/D-18/D-19)
+- [x] 06-06-PLAN.md — Gap closure: subdomain-based preview proxy replacing broken path-based proxy (D-17/D-18/D-19)
 
 ### Phase 7: Resilience & Resource Management
 **Goal**: The platform safely manages VPS resources by enforcing per-environment limits, stopping idle environments, and capping concurrency to prevent system-wide failures
