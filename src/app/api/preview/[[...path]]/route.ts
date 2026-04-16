@@ -12,11 +12,12 @@ const STRIP_HEADERS = ['cookie', 'authorization'];
 
 function extractEnvIdFromHost(host: string | null): string | null {
   if (!host) return null;
-  // Host looks like: {env-id}.preview.devdock.example.com
-  // Extract everything before the first dot that matches PREVIEW_DOMAIN
-  const previewDomain = config.PREVIEW_DOMAIN;
-  if (!previewDomain || !host.endsWith(previewDomain)) return null;
-  const prefix = host.slice(0, host.length - previewDomain.length - 1); // -1 for the dot
+  // Host looks like: {env-id}.preview.devdock.example.com[:port]
+  // Strip port first (e.g., ":3000" in local dev)
+  const hostname = host.split(':')[0];
+  const previewDomain = config.PREVIEW_DOMAIN.split(':')[0]; // Strip port from config too
+  if (!previewDomain || !hostname.endsWith(previewDomain)) return null;
+  const prefix = hostname.slice(0, hostname.length - previewDomain.length - 1); // -1 for the dot
   // Validate UUID format (basic check)
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(prefix)) {
     return null;
