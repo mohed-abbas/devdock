@@ -57,6 +57,9 @@ interface ExecSessionInfo {
 
 const socketSessions = new Map<string, ExecSessionInfo[]>();
 
+// Per-session line buffer for logs forwarding — only complete lines get sent to /logs
+const logLineBuffers = new Map<string, string>();
+
 terminalNs.on('connection', (socket) => {
   const { containerId } = socket.data;
   socketSessions.set(socket.id, []);
@@ -78,19 +81,40 @@ terminalNs.on('connection', (socket) => {
       const sessionIndex = sessions.length - 1;
 
       // Pipe container output -> browser
+      const bufferKey = `${socket.id}:${sessionIndex}`;
+      logLineBuffers.set(bufferKey, '');
+
       stream.on('data', (chunk: Buffer) => {
         socket.emit('exec:output', {
           sessionIndex,
           data: chunk.toString('utf-8'),
         });
-        // Forward exec output to /logs namespace subscribers watching the same container
-        logsNs.to(`container:${containerId}`).emit('logs:data', {
-          data: chunk.toString('utf-8'),
-        });
+
+        // Buffer exec output and forward only complete lines to /logs namespace.
+        // Raw PTY streams include keystroke echoes and ANSI sequences — forwarding
+        // every chunk produces character-by-character noise on the logs page.
+        const text = chunk.toString('utf-8');
+        const buffer = (logLineBuffers.get(bufferKey) || '') + text;
+        const lines = buffer.split('\n');
+        // Keep the last (potentially incomplete) segment in the buffer
+        logLineBuffers.set(bufferKey, lines.pop() || '');
+
+        if (lines.length > 0) {
+          logsNs.to(`container:${containerId}`).emit('logs:data', {
+            data: lines.join('\n') + '\n',
+          });
+        }
       });
 
-      // Handle stream end
+      // Handle stream end — flush any remaining buffered text to logs
       stream.on('end', () => {
+        const remaining = logLineBuffers.get(bufferKey) || '';
+        if (remaining) {
+          logsNs.to(`container:${containerId}`).emit('logs:data', {
+            data: remaining + '\n',
+          });
+        }
+        logLineBuffers.delete(bufferKey);
         socket.emit('exec:exit', { sessionIndex });
       });
 
@@ -135,9 +159,10 @@ terminalNs.on('connection', (socket) => {
   socket.on('disconnect', () => {
     const sessions = socketSessions.get(socket.id);
     if (sessions) {
-      for (const session of sessions) {
+      for (let i = 0; i < sessions.length; i++) {
+        logLineBuffers.delete(`${socket.id}:${i}`);
         try {
-          (session.stream as NodeJS.ReadableStream & { destroy?: () => void }).destroy?.();
+          (sessions[i].stream as NodeJS.ReadableStream & { destroy?: () => void }).destroy?.();
         } catch {
           // Already destroyed
         }

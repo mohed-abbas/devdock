@@ -14,8 +14,9 @@ interface LogsClientProps {
   environmentStatus: string;
 }
 
-// Simple ANSI strip regex (per RESEARCH recommendation — strip, don't render)
-const ANSI_REGEX = /\x1B\[[0-9;]*[A-Za-z]/g;
+// Strip ANSI escape sequences: CSI sequences including private modes (\x1B[?...),
+// OSC sequences (\x1B]...BEL/ST), and other single/two-char escapes
+const ANSI_REGEX = /\x1B\[[\x20-\x3F]*[\x40-\x7E]|\x1B\][^\x07\x1B]*(?:\x07|\x1B\\)|\x1B[^[\]]/g;
 
 export function LogsClient({
   environmentId,
