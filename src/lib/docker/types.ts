@@ -16,6 +16,8 @@ export interface ComposeOptions {
   hostGid: number;
   enablePostgres: boolean;
   enableRedis: boolean;
+  claudeConfigPath: string;   // Host path to ~/.claude, empty string if not set
+  anthropicApiKey: string;     // ANTHROPIC_API_KEY value, empty string if not set
 }
 
 export interface DockerServiceResult {

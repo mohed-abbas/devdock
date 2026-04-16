@@ -32,10 +32,12 @@ services:
         HOST_GID: "{{HOST_GID}}"
     volumes:
       - ./workspace:/workspace
-      # Claude config mounted read-only per Pitfall #5
-      # Path resolved at generation time
-      # - \${HOME}/.claude:/home/dev/.claude:ro
+      # Claude config mounted read-only (D-07, D-09)
+      {{CLAUDE_CONFIG_MOUNT}}
     working_dir: /workspace
+    environment:
+      - ANTHROPIC_API_KEY={{ANTHROPIC_API_KEY}}
+      - TERM=xterm-256color
     networks:
       - project-net
     # No ports published to host (INFRA-05)
@@ -90,6 +92,8 @@ const defaultOptions: ComposeOptions = {
   hostGid: 1000,
   enablePostgres: false,
   enableRedis: false,
+  claudeConfigPath: '',
+  anthropicApiKey: '',
 };
 
 describe('generateComposeFile', () => {
@@ -204,5 +208,38 @@ describe('generateComposeFile', () => {
       'utf-8'
     );
     expect(result).toContain('/tmp/data/my-project/docker-compose.yml');
+  });
+
+  it('includes claude config mount when claudeConfigPath is set', async () => {
+    const options = { ...defaultOptions, claudeConfigPath: '/home/user/.claude' };
+    await generateComposeFile(options, '/tmp/data');
+
+    const writtenContent = vi.mocked(writeFile).mock.calls[0][1] as string;
+    expect(writtenContent).toContain('- /home/user/.claude:/home/dev/.claude:ro');
+  });
+
+  it('removes claude mount placeholder when claudeConfigPath is empty', async () => {
+    await generateComposeFile(defaultOptions, '/tmp/data');
+
+    const writtenContent = vi.mocked(writeFile).mock.calls[0][1] as string;
+    expect(writtenContent).not.toContain('CLAUDE_CONFIG_MOUNT');
+    expect(writtenContent).not.toContain('.claude:ro');
+  });
+
+  it('injects ANTHROPIC_API_KEY when set', async () => {
+    const options = { ...defaultOptions, anthropicApiKey: 'sk-test-123' };
+    await generateComposeFile(options, '/tmp/data');
+
+    const writtenContent = vi.mocked(writeFile).mock.calls[0][1] as string;
+    expect(writtenContent).toContain('ANTHROPIC_API_KEY=sk-test-123');
+  });
+
+  it('leaves ANTHROPIC_API_KEY empty when not set', async () => {
+    await generateComposeFile(defaultOptions, '/tmp/data');
+
+    const writtenContent = vi.mocked(writeFile).mock.calls[0][1] as string;
+    expect(writtenContent).toContain('ANTHROPIC_API_KEY=');
+    // Should not have any value after the equals sign on that line
+    expect(writtenContent).toMatch(/ANTHROPIC_API_KEY=\n/);
   });
 });

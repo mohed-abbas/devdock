@@ -114,6 +114,24 @@ export async function generateComposeFile(
   template = template.replace(/\{\{HOST_UID\}\}/g, String(options.hostUid));
   template = template.replace(/\{\{HOST_GID\}\}/g, String(options.hostGid));
 
+  // Claude config mount (D-07, D-09): read-only to protect host config
+  const claudeConfigPath = options.claudeConfigPath;
+  if (claudeConfigPath) {
+    template = template.replace(
+      /\{\{CLAUDE_CONFIG_MOUNT\}\}/g,
+      `- ${claudeConfigPath}:/home/dev/.claude:ro`,
+    );
+  } else {
+    // Remove the mount placeholder line entirely
+    template = template.replace(/.*\{\{CLAUDE_CONFIG_MOUNT\}\}\n/g, '');
+  }
+
+  // ANTHROPIC_API_KEY injection (D-08)
+  template = template.replace(
+    /\{\{ANTHROPIC_API_KEY\}\}/g,
+    options.anthropicApiKey || '',
+  );
+
   // Uncomment sidecar sections if enabled
   if (options.enablePostgres) {
     template = uncommentSection(template, 'postgres');
@@ -135,7 +153,7 @@ export async function generateComposeFile(
 
   // Write compose file
   const composePath = path.join(projectDir, 'docker-compose.yml');
-  await writeFile(composePath, template, 'utf-8');
+  await writeFile(composePath, template, { encoding: 'utf-8', mode: 0o600 });
 
   return composePath;
 }

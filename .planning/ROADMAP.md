@@ -85,13 +85,13 @@ Plans:
   3. Terminal connection is proxied through the authenticated API — unauthenticated WebSocket connections are rejected
   4. Claude Code CLI is functional inside the environment (user can run `claude` and get a response)
   5. Shared ~/.claude config (GSD, SuperClaude, skills) is available read-only inside the environment
-**Plans**: TBD
+**Plans**: 3 plans
 **UI hint**: yes
 
 Plans:
-- [ ] 04-01: TBD
-- [ ] 04-02: TBD
-- [ ] 04-03: TBD
+- [x] 04-01-PLAN.md — Dependencies, compose template update (claude mount + API key), Docker exec functions, terminal token API
+- [x] 04-02-PLAN.md — Standalone Socket.IO terminal server with token auth, exec bridging, systemd + nginx config
+- [x] 04-03-PLAN.md — Terminal UI: xterm.js page with tabs, reconnect overlay, environment card Terminal button
 
 ### Phase 5: GitHub Integration
 **Goal**: Users can connect their GitHub account and create dev environments directly from their repositories, including private ones
@@ -145,7 +145,7 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|

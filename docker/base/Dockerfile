@@ -49,14 +49,17 @@ RUN if getent group ${HOST_GID} >/dev/null 2>&1; then \
     fi \
     && echo "dev ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/dev
 
-# Claude Code CLI per D-07 -- install system-wide before switching to non-root
-RUN curl -fsSL https://claude.ai/install.sh | bash
-
 # Copy entrypoint script
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 USER dev
+
+# Claude Code CLI per D-07 -- install as dev user so it lands in /home/dev/.local/bin
+RUN curl -fsSL https://claude.ai/install.sh | bash
+
+# Ensure ~/.local/bin is in PATH for all shells
+ENV PATH="/home/dev/.local/bin:${PATH}"
 WORKDIR /workspace
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

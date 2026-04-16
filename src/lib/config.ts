@@ -9,6 +9,9 @@ const envSchema = z.object({
   DEVDOCK_DATA_DIR: z.string().default('./data'),
   DEVDOCK_MAX_CONCURRENT_ENVS: z.coerce.number().int().min(1).default(3),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+  ANTHROPIC_API_KEY: z.string().optional(),
+  CLAUDE_CONFIG_PATH: z.string().optional().default(''),
+  TERMINAL_PORT: z.coerce.number().int().min(1024).default(3001),
 });
 
 export type Config = z.infer<typeof envSchema>;
