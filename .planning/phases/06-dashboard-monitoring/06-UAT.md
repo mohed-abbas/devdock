@@ -1,5 +1,5 @@
 ---
-status: complete
+status: diagnosed
 phase: 06-dashboard-monitoring
 source: 06-01-SUMMARY.md, 06-02-SUMMARY.md, 06-03-SUMMARY.md, 06-04-SUMMARY.md
 started: 2026-04-16T09:10:00Z
@@ -73,5 +73,11 @@ blocked: 0
   reason: "User reported: Page loads and connects but shows 'Waiting for output logs' permanently. Running commands in the web terminal does not produce any log output on the logs page."
   severity: major
   test: 6
-  artifacts: []
-  missing: []
+  root_cause: "Container entrypoint is `exec sleep infinity` (PID 1), which produces zero stdout/stderr. Docker `container.logs()` only captures PID 1 output. Terminal sessions run via `docker exec`, whose output goes to the exec stream, not container logs. The log streaming pipeline is wired correctly but the data source is empty."
+  artifacts:
+    - path: "docker/base/entrypoint.sh"
+      issue: "sleep infinity produces no stdout/stderr for container.logs() to capture"
+    - path: "server/terminal-server.ts"
+      issue: "/logs namespace correctly streams container.logs() but exec session output goes to /terminal namespace only"
+  missing:
+    - "Forward exec session output from /terminal namespace to /logs namespace subscribers for the same container"
