@@ -144,6 +144,18 @@ Plans:
 - [ ] 07-01: TBD
 - [ ] 07-02: TBD
 
+## Backlog
+
+### Phase 999.1: Project-Native Docker Compose Support (BACKLOG)
+
+**Goal:** DevDock detects and uses the project's own `docker-compose.yml` instead of generating one. Injects a dev container as an extra service on the project's network. Enables multi-service projects (frontend + backend + Postgres + Redis + Adminer) to run their full stack from the dashboard — users work on any project regardless of infrastructure complexity.
+**Why:** Current approach (single dev container + optional sidecar checkboxes) doesn't support projects with their own Docker Compose stacks. Users must manually start services, defeating DevDock's core value of productive remote development from anywhere.
+**Requirements:** TBD
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (promote with /gsd-review-backlog when ready)
+
 ## Progress
 
 **Execution Order:**
