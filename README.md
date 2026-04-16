@@ -13,14 +13,14 @@ dockerode + docker compose · xterm.js + Socket.IO · Caddy/nginx.
 ## Prerequisites
 
 - Node.js 20+ and npm
-- Docker Engine (user in the `docker` group, socket at `/var/run/docker.sock`)
+- Docker Engine + Docker Compose v2 (user in the `docker` group, socket at `/var/run/docker.sock`)
 - PostgreSQL 16+ running locally (or reachable via `DATABASE_URL`)
-- `openssl` (for generating secrets)
+- `openssl`, `psql`, `createdb` on `PATH`
 
 ## 1. Install
 
 ```bash
-git clone <this-repo> devdock
+git clone https://github.com/mohed-abbas/devdock.git
 cd devdock
 npm install
 ```
@@ -65,7 +65,8 @@ into `.env.local` and set `GITHUB_TOKEN_ENCRYPTION_KEY` (64 hex chars).
 
 ## 3. Database
 
-Create the database and the app role:
+Create the database and the app role. Match the password you used in
+`DATABASE_URL` inside `.env.local`:
 
 ```bash
 createdb devdock
@@ -80,13 +81,25 @@ Push the schema:
 npx drizzle-kit push
 ```
 
-Seed the first admin user:
+Seed the first admin user (interactive prompt for username/password):
 
 ```bash
 npm run seed-admin
 ```
 
-## 4. Run
+## 4. Build the base dev-environment image
+
+Every dev environment is spawned from `devdock-base:latest` (Ubuntu 24.04 +
+Node 22 + Python 3 + Claude Code CLI). Build it once:
+
+```bash
+docker build -t devdock-base:latest docker/base/
+```
+
+Docker Compose will also auto-build if the image is missing, but pre-building
+avoids a ~5 min stall on the first environment start.
+
+## 5. Run
 
 DevDock is two processes in dev:
 
@@ -102,7 +115,15 @@ Open <http://localhost:3000> and log in with the admin credentials from
 `seed-admin`. To test a preview, create an environment with a preview port,
 start it, then click the preview button.
 
-## 5. Production build
+### Claude Code inside environments (optional)
+
+For Claude Code CLI to work inside spawned containers, set either in `.env.local`:
+
+- `CLAUDE_CONFIG_PATH=/home/you/.claude` — mounts your host `~/.claude` read-only
+  so the container inherits your login, OR
+- `ANTHROPIC_API_KEY=...` — passed into the container env directly.
+
+## 6. Production build
 
 ```bash
 npm run build
@@ -122,8 +143,15 @@ and wildcard subdomain routing to the Next.js process.
   is running on the port embedded in the domain (e.g. `:3000` for nip.io).
   `NEXT_PUBLIC_*` is inlined at build time, so restart `npm run dev` after
   changing it.
+- **Preview button not visible on a running env** — the environment has no
+  preview port set. Click the pencil/edit icon and enter the port your app
+  listens on inside the container (e.g. `3000` for Next, `5173` for Vite).
 - **`docker.sock` permission denied** — add your user to the `docker` group
   and re-login, or run `sudo chmod 666 /var/run/docker.sock` for a quick local
   fix.
+- **Environment fails to start: `image devdock-base:latest not found`** — run
+  `docker build -t devdock-base:latest docker/base/`.
+- **`drizzle-kit push` fails with password auth** — your `DATABASE_URL`
+  password must match the `CREATE USER ... WITH PASSWORD` value from step 3.
 - **GitHub callback returns `github_error`** — check all three GitHub vars are
   set and the callback URL in the OAuth App matches `${AUTH_URL}/api/github/callback`.
