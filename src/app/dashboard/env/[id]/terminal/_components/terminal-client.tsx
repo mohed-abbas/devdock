@@ -99,9 +99,7 @@ export function TerminalClient({
     });
 
     socket.on('connect_error', () => {
-      if (connectionState === 'connecting') {
-        setConnectionState('disconnected');
-      }
+      setConnectionState('disconnected');
     });
 
     // Server created the exec session
