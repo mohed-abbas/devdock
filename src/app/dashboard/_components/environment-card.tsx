@@ -13,7 +13,9 @@ import type { Environment } from '@/hooks/use-environments';
 function getPreviewUrl(envId: string): string | null {
   const previewDomain = process.env.NEXT_PUBLIC_PREVIEW_DOMAIN;
   if (!previewDomain) return null;
-  return `https://${envId}.${previewDomain}`;
+  const protocol =
+    typeof window !== 'undefined' ? window.location.protocol : 'https:';
+  return `${protocol}//${envId}.${previewDomain}`;
 }
 
 interface EnvironmentCardProps {
