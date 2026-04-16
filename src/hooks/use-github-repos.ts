@@ -36,6 +36,7 @@ export function useGitHubRepos() {
         const data = await res.json();
         if (data.expired) {
           setExpired(true);
+          setError('GitHub token expired. Reconnect in Settings.');
           setRepos([]);
           return;
         }
