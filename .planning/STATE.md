@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Phase 5 context gathered
-last_updated: "2026-04-14T10:04:01.992Z"
-last_activity: 2026-04-14
+stopped_at: Phase 6 UI-SPEC approved
+last_updated: "2026-04-16T13:39:42.848Z"
+last_activity: 2026-04-16
 progress:
-  total_phases: 7
-  completed_phases: 5
-  total_plans: 17
-  completed_plans: 17
+  total_phases: 8
+  completed_phases: 6
+  total_plans: 23
+  completed_plans: 23
   percent: 100
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-08)
 
 **Core value:** Enable productive remote development on any project from anywhere so a Claude Code Max subscription isn't wasted
-**Current focus:** Phase 04 — web-terminal-claude-code
+**Current focus:** Phase 06 — dashboard-monitoring
 
 ## Current Position
 
-Phase: 6
+Phase: 7
 Plan: Not started
-Status: Executing Phase 04
-Last activity: 2026-04-14
+Status: Executing Phase 06
+Last activity: 2026-04-16
 
 Progress: [██████████] 100%
 
@@ -36,7 +36,7 @@ Progress: [██████████] 100%
 
 **Velocity:**
 
-- Total plans completed: 14
+- Total plans completed: 20
 - Average duration: ~4min
 - Total execution time: ~24min
 
@@ -48,6 +48,7 @@ Progress: [██████████] 100%
 | 02 | 3 | ~14min | ~5min |
 | 03 | 4 | - | - |
 | 05 | 4 | - | - |
+| 06 | 6 | - | - |
 
 **Recent Trend:**
 
@@ -91,6 +92,11 @@ Recent decisions affecting current work:
 - [Phase 03-environment-lifecycle]: Dashboard _components directory pattern for page-specific client components
 - [Phase 03-environment-lifecycle]: Externalize dockerode/ssh2 via serverExternalPackages for Next.js build (native addons cannot be bundled)
 - [Phase 03-environment-lifecycle]: Raise fs.inotify.max_user_watches on VPS so next dev can boot
+- [Phase 06-dashboard-monitoring]: API-proxied preview route (no nginx config regeneration needed)
+- [Phase 06-dashboard-monitoring]: Preview proxy returns 404 (not 403) for unauthorized environments to avoid information disclosure
+- [Phase 06-dashboard-monitoring]: Reuse terminal server Socket.IO instance for /logs namespace (same HMAC auth pattern)
+- [Phase 06-dashboard-monitoring]: Docker log demux via docker.modem.demuxStream() to prevent binary garbage
+- [Phase 06-dashboard-monitoring]: Exclude data/ from tsconfig to prevent dev environment workspaces from breaking builds
 
 ### Pending Todos
 
@@ -104,6 +110,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-14T08:49:30.612Z
-Stopped at: Phase 5 context gathered
-Resume file: .planning/phases/05-github-integration/05-CONTEXT.md
+Last session: 2026-04-14T13:09:14.135Z
+Stopped at: Phase 6 UI-SPEC approved
+Resume file: .planning/phases/06-dashboard-monitoring/06-UI-SPEC.md

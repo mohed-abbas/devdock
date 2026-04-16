@@ -17,6 +17,7 @@ const createSchema = z.object({
   branch: z.string().max(255).optional(),
   enablePostgres: z.boolean().default(false),
   enableRedis: z.boolean().default(false),
+  previewPort: z.coerce.number().int().min(1).max(65535).optional(),
 });
 
 /**
@@ -172,6 +173,7 @@ export async function POST(request: NextRequest) {
       },
       dockerProjectName,
       networkName,
+      previewPort: parsed.data.previewPort ?? null,
     })
     .returning();
 

@@ -1,11 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import path from 'path';
+import { z } from 'zod';
 import { auth } from '@/auth';
 import { db } from '@/lib/db';
 import { environments } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { composeDown, removeDataDir, getProjectStatus } from '@/lib/docker/docker-service';
 import { config } from '@/lib/config';
+
+const patchSchema = z.object({
+  name: z.string().min(1, 'Name is required.').max(100),
+  previewPort: z.coerce.number().int().min(1).max(65535).nullable(),
+});
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -117,4 +123,50 @@ export async function DELETE(request: NextRequest, { params }: Params) {
   await db.delete(environments).where(eq(environments.id, id));
 
   return NextResponse.json({ success: true });
+}
+
+/**
+ * PATCH /api/environments/[id]
+ * Updates environment name and/or previewPort for the authenticated user.
+ */
+export async function PATCH(request: NextRequest, { params }: Params) {
+  const { id } = await params;
+
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const [env] = await db
+    .select()
+    .from(environments)
+    .where(and(eq(environments.id, id), eq(environments.userId, session.user.id)))
+    .limit(1);
+
+  if (!env) {
+    return NextResponse.json({ error: 'Environment not found' }, { status: 404 });
+  }
+
+  const body = await request.json();
+  const parsed = patchSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: parsed.error.errors[0]?.message ?? 'Invalid input' },
+      { status: 400 },
+    );
+  }
+
+  const { name, previewPort } = parsed.data;
+
+  const [updated] = await db
+    .update(environments)
+    .set({
+      name,
+      previewPort,
+      updatedAt: new Date(),
+    })
+    .where(eq(environments.id, id))
+    .returning();
+
+  return NextResponse.json(updated);
 }

@@ -121,13 +121,16 @@ Plans:
   3. Dashboard shows production apps from /home/murx/apps/ as read-only entries alongside dev environments
   4. User can view live-streamed container logs in the web UI for any running environment
   5. User can access web apps running inside containers via preview URLs (port forwarding through the platform)
-**Plans**: TBD
+**Plans**: 6 plans
 **UI hint**: yes
 
 Plans:
-- [ ] 06-01: TBD
-- [ ] 06-02: TBD
-- [ ] 06-03: TBD
+- [x] 06-01-PLAN.md — Backend: schema (previewPort), config (PRODUCTION_APPS_DIR), environments API update, preview proxy route, production discovery service + API
+- [x] 06-02-PLAN.md — Log streaming: Socket.IO /logs namespace, logs token API, full-screen logs page with auto-scroll and connection states
+- [x] 06-03-PLAN.md — Dashboard UI: environment card enhancements (Logs + Preview buttons), create dialog preview port, production app cards + list, page restructure
+- [x] 06-04-PLAN.md — Integration gate: schema push, build verification, test suite, human-verify dashboard UI
+- [x] 06-05-PLAN.md — Gap closure: bridge exec output from /terminal to /logs namespace for live log streaming
+- [x] 06-06-PLAN.md — Gap closure: subdomain-based preview proxy replacing broken path-based proxy (D-17/D-18/D-19)
 
 ### Phase 7: Resilience & Resource Management
 **Goal**: The platform safely manages VPS resources by enforcing per-environment limits, stopping idle environments, and capping concurrency to prevent system-wide failures
@@ -143,6 +146,18 @@ Plans:
 - [ ] 07-01: TBD
 - [ ] 07-02: TBD
 
+## Backlog
+
+### Phase 999.1: Project-Native Docker Compose Support (BACKLOG)
+
+**Goal:** DevDock detects and uses the project's own `docker-compose.yml` instead of generating one. Injects a dev container as an extra service on the project's network. Enables multi-service projects (frontend + backend + Postgres + Redis + Adminer) to run their full stack from the dashboard — users work on any project regardless of infrastructure complexity.
+**Why:** Current approach (single dev container + optional sidecar checkboxes) doesn't support projects with their own Docker Compose stacks. Users must manually start services, defeating DevDock's core value of productive remote development from anywhere.
+**Requirements:** TBD
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (promote with /gsd-review-backlog when ready)
+
 ## Progress
 
 **Execution Order:**
@@ -155,5 +170,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 3. Environment Lifecycle | 0/4 | Not started | - |
 | 4. Web Terminal & Claude Code | 0/3 | Not started | - |
 | 5. GitHub Integration | 0/4 | Not started | - |
-| 6. Dashboard & Monitoring | 0/3 | Not started | - |
+| 6. Dashboard & Monitoring | 5/6 | Gap closure | - |
 | 7. Resilience & Resource Management | 0/2 | Not started | - |

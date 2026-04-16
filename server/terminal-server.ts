@@ -1,6 +1,8 @@
 import express from 'express';
 import { createServer } from 'http';
+import { PassThrough } from 'stream';
 import { Server } from 'socket.io';
+import Docker from 'dockerode';
 import { verifySignedToken, type TokenPayload } from './terminal-auth';
 import { createExecSession, resizeExec } from '../src/lib/docker/docker-service';
 
@@ -8,6 +10,8 @@ const app = express();
 const httpServer = createServer(app);
 
 const DEVDOCK_URL = process.env.DEVDOCK_URL || process.env.AUTH_URL || 'http://localhost:3000';
+
+const docker = new Docker({ socketPath: process.env.DOCKER_SOCKET || '/var/run/docker.sock' });
 
 const io = new Server(httpServer, {
   path: '/ws/socket.io',
@@ -53,6 +57,9 @@ interface ExecSessionInfo {
 
 const socketSessions = new Map<string, ExecSessionInfo[]>();
 
+// Per-session line buffer for logs forwarding — only complete lines get sent to /logs
+const logLineBuffers = new Map<string, string>();
+
 terminalNs.on('connection', (socket) => {
   const { containerId } = socket.data;
   socketSessions.set(socket.id, []);
@@ -74,15 +81,40 @@ terminalNs.on('connection', (socket) => {
       const sessionIndex = sessions.length - 1;
 
       // Pipe container output -> browser
+      const bufferKey = `${socket.id}:${sessionIndex}`;
+      logLineBuffers.set(bufferKey, '');
+
       stream.on('data', (chunk: Buffer) => {
         socket.emit('exec:output', {
           sessionIndex,
           data: chunk.toString('utf-8'),
         });
+
+        // Buffer exec output and forward only complete lines to /logs namespace.
+        // Raw PTY streams include keystroke echoes and ANSI sequences — forwarding
+        // every chunk produces character-by-character noise on the logs page.
+        const text = chunk.toString('utf-8');
+        const buffer = (logLineBuffers.get(bufferKey) || '') + text;
+        const lines = buffer.split('\n');
+        // Keep the last (potentially incomplete) segment in the buffer
+        logLineBuffers.set(bufferKey, lines.pop() || '');
+
+        if (lines.length > 0) {
+          logsNs.to(`container:${containerId}`).emit('logs:data', {
+            data: lines.join('\n') + '\n',
+          });
+        }
       });
 
-      // Handle stream end
+      // Handle stream end — flush any remaining buffered text to logs
       stream.on('end', () => {
+        const remaining = logLineBuffers.get(bufferKey) || '';
+        if (remaining) {
+          logsNs.to(`container:${containerId}`).emit('logs:data', {
+            data: remaining + '\n',
+          });
+        }
+        logLineBuffers.delete(bufferKey);
         socket.emit('exec:exit', { sessionIndex });
       });
 
@@ -127,14 +159,101 @@ terminalNs.on('connection', (socket) => {
   socket.on('disconnect', () => {
     const sessions = socketSessions.get(socket.id);
     if (sessions) {
-      for (const session of sessions) {
+      for (let i = 0; i < sessions.length; i++) {
+        logLineBuffers.delete(`${socket.id}:${i}`);
         try {
-          (session.stream as NodeJS.ReadableStream & { destroy?: () => void }).destroy?.();
+          (sessions[i].stream as NodeJS.ReadableStream & { destroy?: () => void }).destroy?.();
         } catch {
           // Already destroyed
         }
       }
       socketSessions.delete(socket.id);
+    }
+  });
+});
+
+// === Logs Namespace (D-08: reuse terminal server for log streaming) ===
+const logsNs = io.of('/logs');
+
+// Auth middleware — identical to terminal namespace
+logsNs.use((socket, next) => {
+  const token = (socket.handshake.auth?.token as string) ||
+                (socket.handshake.query?.token as string);
+
+  if (!token) {
+    return next(new Error('Authentication required'));
+  }
+
+  const payload = verifySignedToken(token);
+  if (!payload) {
+    return next(new Error('Invalid or expired token'));
+  }
+
+  socket.data.environmentId = payload.environmentId;
+  socket.data.userId = payload.userId;
+  socket.data.containerId = payload.containerId;
+  next();
+});
+
+// Track log streams per socket for cleanup
+const logStreams = new Map<string, { stream: NodeJS.ReadableStream; passthrough: PassThrough }>();
+
+logsNs.on('connection', async (socket) => {
+  const { containerId } = socket.data;
+
+  // Join the container room so exec output from /terminal can be broadcast here
+  socket.join(`container:${containerId}`);
+
+  try {
+    const container = docker.getContainer(containerId);
+    const stream = await container.logs({
+      follow: true,
+      stdout: true,
+      stderr: true,
+      tail: 200,
+      timestamps: false,
+    });
+
+    // Demux stdout/stderr into single PassThrough (Pitfall 1: binary garbage without demux)
+    const passthrough = new PassThrough();
+    docker.modem.demuxStream(stream as NodeJS.ReadableStream, passthrough, passthrough);
+
+    logStreams.set(socket.id, {
+      stream: stream as NodeJS.ReadableStream,
+      passthrough,
+    });
+
+    passthrough.on('data', (chunk: Buffer) => {
+      socket.emit('logs:data', { data: chunk.toString('utf-8') });
+    });
+
+    // Handle stream end (container stopped)
+    passthrough.on('end', () => {
+      socket.emit('logs:end', {});
+    });
+
+    // Also handle the raw stream end/error
+    (stream as NodeJS.ReadableStream).on('end', () => {
+      passthrough.end();
+    });
+    (stream as NodeJS.ReadableStream).on('error', () => {
+      passthrough.end();
+    });
+  } catch (err) {
+    socket.emit('logs:error', { message: 'Failed to attach to container logs' });
+  }
+
+  // Cleanup on disconnect
+  socket.on('disconnect', () => {
+    const entry = logStreams.get(socket.id);
+    if (entry) {
+      try {
+        (entry.stream as NodeJS.ReadableStream & { destroy?: () => void }).destroy?.();
+        entry.passthrough.destroy();
+      } catch {
+        // Already destroyed
+      }
+      logStreams.delete(socket.id);
     }
   });
 });

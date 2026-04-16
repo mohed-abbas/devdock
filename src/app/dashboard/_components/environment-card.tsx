@@ -5,9 +5,16 @@ import { Card, CardHeader, CardTitle, CardDescription, CardAction, CardFooter } 
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from './status-badge';
 import { DeleteEnvironmentDialog } from './delete-environment-dialog';
-import { Play, Square, Trash2, TerminalSquare } from 'lucide-react';
+import { Play, Square, Trash2, TerminalSquare, ScrollText, ExternalLink } from 'lucide-react';
+import { EditEnvironmentDialog } from './edit-environment-dialog';
 import Link from 'next/link';
 import type { Environment } from '@/hooks/use-environments';
+
+function getPreviewUrl(envId: string): string | null {
+  const previewDomain = process.env.NEXT_PUBLIC_PREVIEW_DOMAIN;
+  if (!previewDomain) return null;
+  return `https://${envId}.${previewDomain}`;
+}
 
 interface EnvironmentCardProps {
   environment: Environment;
@@ -88,6 +95,36 @@ export function EnvironmentCard({ environment, onRefetch }: EnvironmentCardProps
           {formatRelativeTime(environment.createdAt)}
         </span>
         <div className="flex items-center gap-2">
+          {/* Preview button — visible when running, previewPort set, and NEXT_PUBLIC_PREVIEW_DOMAIN configured (D-18) */}
+          {(() => {
+            const previewUrl = getPreviewUrl(environment.id);
+            return environment.status === 'running' && environment.previewPort !== null && previewUrl ? (
+              <a
+                href={previewUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Open preview"
+                title="Open preview"
+              >
+                <Button variant="outline" size="sm">
+                  <ExternalLink className="size-4" />
+                </Button>
+              </a>
+            ) : null;
+          })()}
+          {/* Logs button — visible when running (D-09) */}
+          {environment.status === 'running' && (
+            <Link
+              href={`/dashboard/env/${environment.id}/logs`}
+              aria-label="View logs"
+              title="View logs"
+            >
+              <Button variant="outline" size="sm">
+                <ScrollText className="size-4" />
+              </Button>
+            </Link>
+          )}
+          {/* Terminal button — existing, visible when running */}
           {environment.status === 'running' && (
             <Link
               href={`/dashboard/env/${environment.id}/terminal`}
@@ -123,6 +160,11 @@ export function EnvironmentCard({ environment, onRefetch }: EnvironmentCardProps
               <Square className="size-4" />
             </Button>
           )}
+          <EditEnvironmentDialog
+            environment={environment}
+            onUpdated={onRefetch}
+            disabled={isTransitioning || actionLoading !== null}
+          />
           <DeleteEnvironmentDialog
             environment={environment}
             onDeleted={onRefetch}

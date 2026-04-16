@@ -44,6 +44,7 @@ export const environments = pgTable('environments', {
   networkName: varchar('network_name', { length: 255 }),
   memoryLimit: integer('memory_limit'),
   cpuLimit: integer('cpu_limit'),
+  previewPort: integer('preview_port'),
   lastActivityAt: timestamp('last_activity_at'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),

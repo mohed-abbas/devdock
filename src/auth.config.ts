@@ -10,7 +10,8 @@ export const authConfig = {
       const isOnDashboard = nextUrl.pathname.startsWith('/dashboard');
       const isOnApi = nextUrl.pathname.startsWith('/api') &&
                       !nextUrl.pathname.startsWith('/api/auth') &&
-                      !nextUrl.pathname.startsWith('/api/health');
+                      !nextUrl.pathname.startsWith('/api/health') &&
+                      !nextUrl.pathname.startsWith('/api/preview');
 
       if (isOnDashboard || isOnApi) {
         if (isLoggedIn) return true;
