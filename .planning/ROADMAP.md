@@ -152,7 +152,27 @@ Plans:
 
 **Goal:** DevDock detects and uses the project's own `docker-compose.yml` instead of generating one. Injects a dev container as an extra service on the project's network. Enables multi-service projects (frontend + backend + Postgres + Redis + Adminer) to run their full stack from the dashboard — users work on any project regardless of infrastructure complexity.
 **Why:** Current approach (single dev container + optional sidecar checkboxes) doesn't support projects with their own Docker Compose stacks. Users must manually start services, defeating DevDock's core value of productive remote development from anywhere.
+**Depends on:** Phase 999.2 (self-containerization locks the proxy/network/volume/socket topology that project-native injection plugs into).
 **Requirements:** TBD
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (promote with /gsd-review-backlog when ready)
+
+### Phase 999.2: DevDock Self-Containerization (BACKLOG)
+
+**Goal:** DevDock ships its own `docker-compose.yml` — `app` (Next.js), `terminal` (Socket.IO), `postgres`, and `caddy` — so `docker compose up` is the entire dev and prod story. Replaces the current systemd + host-Postgres + host-nginx setup. Migrations auto-run on container start. No hardcoded host paths. Direction: **me-first, OSS-cheap** — build for the current VPS, make cheap choices that keep future npm/Docker-image distribution unblocked (env-var config, containerized dependencies, env-var admin seed, no host installs). Scope spans impact on Phase 1 (systemd→compose), Phase 4 (terminal server as service), and Phase 6 (proxy placement/preview routing topology).
+**Why:** Current stack requires juggling `npm run dev` + `npm run term:dev` + `npm run db:push` locally, systemd units + host Postgres + host nginx in prod, and hardcoded `/home/murx/` paths throughout. Self-containerizing eliminates dev ergonomic friction, simplifies prod deploy to `docker compose up -d --build`, and makes the eventual OSS release (npm CLI / published Docker image) a packaging wrapper rather than a rewrite. Must land before 999.1 because project-native compose injection depends on how DevDock's own stack wires the proxy, Docker socket, and `.claude`/data/apps volumes.
+**Locked direction (from /gsd-discuss-phase 999.1 pivot, 2026-04-17):**
+  - Build for the current VPS now; design so OSS distribution is a later packaging phase, not a redesign.
+  - Postgres: containerized in DevDock's stack with a dedicated named volume (host Postgres keeps running for production apps under /home/murx/).
+  - Caddy (or nginx) lives inside DevDock's compose with auto-TLS; shared `devdock-proxy` Docker network so Caddy can reach user-project containers by name.
+  - Auto-migrate on app container start (`drizzle-kit push` or migration runner in entrypoint). No manual DB setup.
+  - Admin seeded from env vars (`ADMIN_USERNAME` / `ADMIN_PASSWORD_HASH`) on first boot if no users exist.
+  - Zero hardcoded host paths — everything configurable via env (`DEVDOCK_DATA_DIR`, `PRODUCTION_APPS_DIR`, `CLAUDE_CONFIG_PATH`, etc.).
+  - Config split: `.env.example` shipped with safe defaults, `.env.local` gitignored for per-host secrets.
+**Explicitly deferred to a later phase (999.3+):** npm CLI wrapper, published Docker image, install script, non-author-facing docs (README/CONTRIBUTING), license, GitHub org/CI badges, admin UI first-run setup, multi-user polish (USER-01..04).
+**Requirements:** TBD (likely expands INFRA-* set)
 **Plans:** 0 plans
 
 Plans:
