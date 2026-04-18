@@ -25,11 +25,12 @@ log "starting (pid $$)"
 POSTGRES_HOST="${POSTGRES_HOST:-postgres}"
 POSTGRES_USER="${POSTGRES_USER:-devdock}"
 POSTGRES_DB_NAME="${POSTGRES_DB:-devdock}"
+POSTGRES_PORT="${POSTGRES_PORT:-5432}"
 POSTGRES_WAIT_TIMEOUT="${POSTGRES_WAIT_TIMEOUT:-60}"
 
-log "waiting for postgres at ${POSTGRES_HOST} (timeout=${POSTGRES_WAIT_TIMEOUT}s)"
+log "waiting for postgres at ${POSTGRES_HOST}:${POSTGRES_PORT} (timeout=${POSTGRES_WAIT_TIMEOUT}s)"
 elapsed=0
-until pg_isready -h "${POSTGRES_HOST}" -U "${POSTGRES_USER}" -d "${POSTGRES_DB_NAME}" >/dev/null 2>&1; do
+until pg_isready -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" -d "${POSTGRES_DB_NAME}" >/dev/null 2>&1; do
   if [ "${elapsed}" -ge "${POSTGRES_WAIT_TIMEOUT}" ]; then
     log "postgres not ready after ${POSTGRES_WAIT_TIMEOUT}s — giving up"
     exit 1
