@@ -1,0 +1,50 @@
+# docker-compose.override.yml — Dev HMR overlay (Phase 999.2, D-16)
+#
+# Auto-loaded by `docker compose up` (compose v2 merges this on top of docker-compose.yml).
+# To run the production stack without dev overrides, use:
+#   docker compose -f docker-compose.yml up -d --build
+
+services:
+  app:
+    # In dev, re-use the `deps` stage (has all devDependencies) instead of the minimal runner.
+    build:
+      target: deps
+    # Override CMD to Next.js dev server with turbopack HMR.
+    command: ["npx", "next", "dev", "--turbopack", "--port", "3000", "--hostname", "0.0.0.0"]
+    # Bind-mount source directories so edits on the host trigger HMR inside the container.
+    # node_modules intentionally NOT mounted — we use the image's copy (platform-correct).
+    volumes:
+      - ./src:/app/src
+      - ./server:/app/server
+      - ./public:/app/public
+      - ./next.config.ts:/app/next.config.ts
+      - ./tsconfig.json:/app/tsconfig.json
+      - ./package.json:/app/package.json
+      - ./drizzle.config.ts:/app/drizzle.config.ts
+      - ./middleware.ts:/app/middleware.ts
+      # Anonymous volume preserves image node_modules / .next from host mount bleed.
+      - /app/node_modules
+      - /app/.next
+    # Keep the production env/mounts from docker-compose.yml via merge semantics.
+    # Override NODE_ENV for dev mode:
+    environment:
+      NODE_ENV: development
+    # Disable the entrypoint in dev — no drizzle-kit push / seed needed from app
+    # since a developer has usually already done it. Run manually when needed:
+    #   docker compose exec app npx drizzle-kit push
+    #   docker compose exec app npm run seed-admin
+    entrypoint: []
+
+  terminal:
+    build:
+      target: deps
+    command: ["npx", "tsx", "--watch", "server/terminal-server.ts"]
+    volumes:
+      - ./src:/app/src
+      - ./server:/app/server
+      - ./tsconfig.json:/app/tsconfig.json
+      - ./package.json:/app/package.json
+      - /app/node_modules
+    environment:
+      NODE_ENV: development
+    entrypoint: []
