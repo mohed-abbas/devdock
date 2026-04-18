@@ -172,11 +172,20 @@ Plans:
   - Zero hardcoded host paths — everything configurable via env (`DEVDOCK_DATA_DIR`, `PRODUCTION_APPS_DIR`, `CLAUDE_CONFIG_PATH`, etc.).
   - Config split: `.env.example` shipped with safe defaults, `.env.local` gitignored for per-host secrets.
 **Explicitly deferred to a later phase (999.3+):** npm CLI wrapper, published Docker image, install script, non-author-facing docs (README/CONTRIBUTING), license, GitHub org/CI badges, admin UI first-run setup, multi-user polish (USER-01..04).
-**Requirements:** TBD (likely expands INFRA-* set)
-**Plans:** 0 plans
+**Requirements:** (runtime re-implementation of INFRA-01..05, TERM-01..05, DASH-17 — phase_req_ids null by design; no new REQ-IDs)
+**Plans:** 10 plans
 
 Plans:
-- [ ] TBD (promote with /gsd-review-backlog when ready)
+- [ ] 999.2-01-PLAN.md — Wave 0 validation stubs (compose-lint, entrypoint.test, hash-password.test, stack-smoke, vitest.config)
+- [ ] 999.2-02-PLAN.md — Env+seed foundation: extend config.ts + .env.example, hash-password.ts, seed-admin-boot.ts, promote drizzle-kit/tsx to deps
+- [ ] 999.2-03-PLAN.md — Multi-stage Dockerfile (app-runner + terminal-runner targets), .dockerignore, Caddyfile
+- [ ] 999.2-04-PLAN.md — Container entrypoints: scripts/entrypoint-app.sh (postgres-wait → GID fixup → drizzle-kit push → seed → exec) + scripts/entrypoint-terminal.sh
+- [ ] 999.2-05-PLAN.md — docker-compose.yml (4 services + 2 networks + 3 volumes) + docker-compose.override.yml (dev HMR); remove legacy docker-compose.dev.yml
+- [ ] 999.2-06-PLAN.md — Caddy Admin API client: caddy-admin.ts + types + vitest tests (idempotent DELETE-then-POST upsert)
+- [ ] 999.2-07-PLAN.md — Per-project compose template: attach dev service to devdock-proxy external network + regression test
+- [ ] 999.2-08-PLAN.md — Wire addPreviewRoute/removePreviewRoute into env lifecycle routes (create/start/stop/delete) + annotate /api/preview fallback
+- [ ] 999.2-09-PLAN.md — Deploy artifact updates: nginx upstream → Caddy :8080, systemd deprecation header, HUMAN-UAT cutover runbook
+- [ ] 999.2-10-PLAN.md — End-to-end smoke gate (autonomous: false — requires Docker): run all shell smokes + vitest; populate VALIDATION.md per-task map
 
 ## Progress
 
