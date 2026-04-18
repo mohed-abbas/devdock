@@ -9,6 +9,7 @@ import { config } from '@/lib/config';
 import { generateSlug, isValidSlug } from '@/lib/docker/slug';
 import { generateComposeFile } from '@/lib/docker/compose-generator';
 import { composeUp, cloneRepo, getProjectStatus } from '@/lib/docker/docker-service';
+import { registerPreviewRoute } from '@/lib/docker/caddy-lifecycle';
 import { githubAccounts } from '@/lib/db/schema';
 
 const createSchema = z.object({
@@ -245,6 +246,12 @@ export async function POST(request: NextRequest) {
           .update(environments)
           .set({ status: 'running', lastActivityAt: new Date() })
           .where(eq(environments.id, envId));
+        // Register preview route with Caddy (D-11, 999.2). No-op if PREVIEW_DOMAIN unset.
+        await registerPreviewRoute({
+          id: newEnv.id,
+          slug: newEnv.slug,
+          previewPort: newEnv.previewPort,
+        });
       } else {
         await db
           .update(environments)
