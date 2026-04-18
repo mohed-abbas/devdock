@@ -5,7 +5,12 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    include: ['src/**/__tests__/**/*.test.ts', 'src/**/*.test.ts', 'server/**/*.test.ts'],
+    include: [
+      'src/**/__tests__/**/*.test.ts',
+      'src/**/*.test.ts',
+      'server/**/*.test.ts',
+      'tests/**/*.{test,spec}.ts',
+    ],
     exclude: ['node_modules', '.next'],
   },
   resolve: {
