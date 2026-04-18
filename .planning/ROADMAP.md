@@ -187,6 +187,14 @@ Plans:
 - [ ] 999.2-09-PLAN.md — Deploy artifact updates: nginx upstream → Caddy :8080, systemd deprecation header, HUMAN-UAT cutover runbook
 - [ ] 999.2-10-PLAN.md — End-to-end smoke gate (autonomous: false — requires Docker): run all shell smokes + vitest; populate VALIDATION.md per-task map
 
+### Phase 999.2.1: Fix entrypoint test and Dockerfile build env (INSERTED)
+
+**Goal:** Close the two E2E gaps surfaced by 999.2 Plan 10's validation gate so the stack-smoke + entrypoint integration tests turn green and `999.2-VALIDATION.md` can flip to `nyquist_compliant: true`.
+**Why:** Phase 999.2 merged with 9/10 plans green and Plan 10 reporting `gaps-found`. Two real defects block the E2E gate: (GAP-1) `scripts/entrypoint-app.sh` ignores `POSTGRES_PORT`, so `tests/entrypoint.test.sh` cannot drive a host-side throwaway postgres; (GAP-2) Dockerfile builder stage lacks placeholder `DATABASE_URL`/`AUTH_SECRET` ARGs, so `npm run build` fails at Next.js page-data collection. Both are 2-3 line edits.
+**Scope:** 3 small file edits (entrypoint + test + Dockerfile) + re-run Plan 10's gate. Source of truth: `.planning/phases/999.2-devdock-self-containerization/999.2-10-SUMMARY.md` and `.planning/phases/999.2-devdock-self-containerization/999.2-VALIDATION.md` Gaps table.
+**Requirements:** None (gap-closure for 999.2 — no new REQ-IDs)
+**Plans:** TBD — run `/gsd-plan-phase 999.2.1`
+
 ## Progress
 
 **Execution Order:**

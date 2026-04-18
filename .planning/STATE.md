@@ -98,6 +98,10 @@ Recent decisions affecting current work:
 - [Phase 06-dashboard-monitoring]: Docker log demux via docker.modem.demuxStream() to prevent binary garbage
 - [Phase 06-dashboard-monitoring]: Exclude data/ from tsconfig to prevent dev environment workspaces from breaking builds
 
+### Roadmap Evolution
+
+- Phase 999.2.1 inserted after Phase 999.2 on 2026-04-19: gap-closure for entrypoint POSTGRES_PORT support + Dockerfile builder placeholder env vars (URGENT — surfaced by Plan 10's E2E gate)
+
 ### Pending Todos
 
 None yet.
