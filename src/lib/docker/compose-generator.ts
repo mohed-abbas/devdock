@@ -95,6 +95,11 @@ function uncommentVolumes(template: string, enablePostgres: boolean): string {
  * sidecar service sections, creates the workspace directory, and writes the
  * compose file to the project's data directory.
  *
+ * Phase 999.2 (D-10): The template statically declares the `devdock-proxy`
+ * external network and attaches the `dev` service to it. The root
+ * `docker-compose.yml` owns that network. This enables Caddy to reach
+ * `devdock-{slug}-dev:{port}` for preview routing.
+ *
  * @param options - Compose generation options
  * @param dataDir - Absolute path to the DevDock data directory
  * @returns Full path to the written compose file
