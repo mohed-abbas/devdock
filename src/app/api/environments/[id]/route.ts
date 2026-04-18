@@ -6,6 +6,7 @@ import { db } from '@/lib/db';
 import { environments } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { composeDown, removeDataDir, getProjectStatus } from '@/lib/docker/docker-service';
+import { deregisterPreviewRoute } from '@/lib/docker/caddy-lifecycle';
 import { config } from '@/lib/config';
 
 const patchSchema = z.object({
@@ -111,6 +112,10 @@ export async function DELETE(request: NextRequest, { params }: Params) {
       // Ignore -- compose project may not exist
     }
   }
+
+  // Deregister preview route from Caddy (D-11, 999.2).
+  // Called after composeDown but before DB row delete — semantically correct ordering.
+  await deregisterPreviewRoute(env.slug);
 
   // Remove data directory (D-12)
   try {
