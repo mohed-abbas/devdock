@@ -1,0 +1,48 @@
+# Caddyfile — DevDock internal reverse proxy (Phase 999.2)
+#
+# Host topology:
+#   host nginx (ports 80 and 443, TLS)
+#     └→ 127.0.0.1:${CADDY_INTERNAL_PORT:-8080} (this Caddy)
+#         ├→ app:3000            (Next.js dashboard + API)
+#         ├→ terminal:3001       (Socket.IO — /ws/*)
+#         └→ devdock-{slug}-dev  (per-project preview — registered at runtime via Admin API)
+#
+# Security:
+#   - D-03: HTTP-only inside the stack. Host nginx handles TLS. No cert volumes here.
+#   - Admin API on :2019 binds to 0.0.0.0 for compose-internal reachability,
+#     BUT port 2019 is NEVER published to the host (T-999.2-02).
+#   - RESEARCH.md Pitfall 3: default `localhost:2019` is container-local — unreachable
+#     from `app`. `admin :2019` fixes this by binding to all interfaces.
+
+{
+    # Admin API — compose-internal only (T-999.2-02).
+    admin :2019
+
+    # No automatic HTTPS issuance — host nginx terminates TLS (D-03).
+    auto_https off
+
+    # Persist dynamic config changes (preview routes added via Admin API) so they
+    # survive container restarts. Stored in the caddy_data volume mounted in compose.
+    persist_config on
+
+    # JSON logging for journalctl-friendly output.
+    log {
+        output stdout
+        format json
+    }
+}
+
+# Public entry point — receives traffic from host nginx.
+:8080 {
+    # Socket.IO path (terminal auth + /logs namespace — see server/terminal-server.ts).
+    # Both the /terminal and /logs namespaces share the `/ws/socket.io` path.
+    handle /ws/* {
+        reverse_proxy terminal:3001
+    }
+
+    # Everything else → Next.js app (dashboard, API, preview subdomain rewrites
+    # handled internally by src/middleware.ts for non-Caddy-registered hosts).
+    handle {
+        reverse_proxy app:3000
+    }
+}
