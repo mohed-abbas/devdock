@@ -23,7 +23,8 @@
 
     # Persist dynamic config changes (preview routes added via Admin API) so they
     # survive container restarts. Stored in the caddy_data volume mounted in compose.
-    persist_config on
+    # Caddy persists by default; the Caddyfile directive only accepts `off` to disable,
+    # so omission here leaves persistence enabled (intended).
 
     # JSON logging for journalctl-friendly output.
     log {
