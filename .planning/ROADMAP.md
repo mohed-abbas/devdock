@@ -195,6 +195,14 @@ Plans:
 **Requirements:** None (gap-closure for 999.2 — no new REQ-IDs)
 **Plans:** TBD — run `/gsd-plan-phase 999.2.1`
 
+### Phase 999.2.2: Fix compose mount paths and terminal env (INSERTED)
+
+**Goal:** Close the two stack-smoke gaps surfaced after 999.2.1 unblocked the earlier stages of Plan 10's gate, so `bash scripts/stack-smoke.sh` × 2 exits 0 end-to-end and `999.2-VALIDATION.md` can flip to `nyquist_compliant: true`.
+**Why:** Phase 999.2.1 closed the original GAP-1 (entrypoint POSTGRES_PORT) and GAP-2 (Dockerfile builder placeholders), plus an inline GAP-3 (Caddyfile `persist_config`). Running Plan 10's gate past those unblocks revealed two more pre-existing defects: (GAP-4) `docker-compose.yml` bind-mounts hard-code `/srv/devdock/*` production paths using the `${VAR}:${VAR}` pattern, which breaks local dev on Darwin; (GAP-5) the `terminal` service env block is missing `DATABASE_URL`, but `server/terminal-server.ts` imports `src/lib/config.ts` which hard-fails at boot without it. Both are small changes but both are required before the Plan 10 × 2 idempotency gate can go fully green.
+**Scope:** (a) Compose mount-path policy: either update `.env.example` to document the absolute-path requirement for local dev, or change the mount pattern to `${VAR}:/fixed/container/path` so host paths can be relative. (b) Terminal service `DATABASE_URL` wiring: add to env block, OR split `src/lib/config.ts` so terminal paths don't require DB vars. (c) Re-run full Plan 10 gate (tsc + vitest + compose-lint + stack-smoke × 2). (d) Flip `999.2-VALIDATION.md` rows 01-T3 / 02-T3 / 04-T1 / 10-T1 to ✅ green and set `nyquist_compliant: true`, `status: approved`. Source of truth: `.planning/phases/999.2.1-fix-entrypoint-test-and-dockerfile-build-env/999.2.1-01-SUMMARY.md` (GAPs 4-5 section) and `999.2-VALIDATION.md` Gaps table.
+**Requirements:** None (continuation of 999.2 gap-closure — no new REQ-IDs)
+**Plans:** TBD — run `/gsd-plan-phase 999.2.2`
+
 ## Progress
 
 **Execution Order:**

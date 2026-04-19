@@ -101,6 +101,7 @@ Recent decisions affecting current work:
 ### Roadmap Evolution
 
 - Phase 999.2.1 inserted after Phase 999.2 on 2026-04-19: gap-closure for entrypoint POSTGRES_PORT support + Dockerfile builder placeholder env vars (URGENT — surfaced by Plan 10's E2E gate)
+- Phase 999.2.2 inserted after Phase 999.2.1 on 2026-04-19: continuation gap-closure — compose mount-path policy (GAP-4) + terminal service DATABASE_URL wiring (GAP-5). Surfaced after 999.2.1 unblocked the earlier stages of Plan 10's gate. Scope: make `stack-smoke × 2` green end-to-end, flip remaining VALIDATION.md rows, set `nyquist_compliant: true`.
 
 ### Pending Todos
 
