@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Phase 999.2.2 context gathered
-last_updated: "2026-04-19T13:45:27.451Z"
-last_activity: 2026-04-19 -- Phase 999.2.2 planning complete
+status: verifying
+stopped_at: "Completed 999.2.2-01-PLAN.md — Phase 999.2 approved (nyquist_compliant: true)"
+last_updated: "2026-04-19T14:14:36.112Z"
+last_activity: 2026-04-19
 progress:
   total_phases: 11
-  completed_phases: 8
+  completed_phases: 9
   total_plans: 35
-  completed_plans: 34
-  percent: 97
+  completed_plans: 35
+  percent: 100
 ---
 
 # Project State
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-08)
 
 **Core value:** Enable productive remote development on any project from anywhere so a Claude Code Max subscription isn't wasted
-**Current focus:** Phase 06 — dashboard-monitoring
+**Current focus:** Phase null — fix-compose-mounts-and-terminal-env
 
 ## Current Position
 
-Phase: 7
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-04-19 -- Phase 999.2.2 planning complete
+Phase: null (fix-compose-mounts-and-terminal-env) — EXECUTING
+Plan: 1 of 1
+Status: Phase complete — ready for verification
+Last activity: 2026-04-19
 
 Progress: [██████████] 100%
 
@@ -64,6 +64,7 @@ Progress: [██████████] 100%
 | Phase 02-authentication P03 | 6min | 2 tasks | 7 files |
 | Phase 03-environment-lifecycle P03 | 14min | 2 tasks | 13 files |
 | Phase 03-environment-lifecycle P04 | 12min | 2 tasks | 1 files |
+| Phase 999.2.2 P01 | 24min | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -97,6 +98,9 @@ Recent decisions affecting current work:
 - [Phase 06-dashboard-monitoring]: Reuse terminal server Socket.IO instance for /logs namespace (same HMAC auth pattern)
 - [Phase 06-dashboard-monitoring]: Docker log demux via docker.modem.demuxStream() to prevent binary garbage
 - [Phase 06-dashboard-monitoring]: Exclude data/ from tsconfig to prevent dev environment workspaces from breaking builds
+- [Phase 999.2.2]: Terminal service DATABASE_URL wired via single compose env line mirroring app service (GAP-5 closed; D-05)
+- [Phase 999.2.2]: .env.example absolute-host-path policy: blank DEVDOCK_DATA_DIR + comment blocks for three bind-mount vars (GAP-4 closed; D-02)
+- [Phase 999.2.2]: Cascade deviations auto-fixed in docker-compose.yml (Rule 3): absolute tsx path command + GITHUB_* empty-string passthrough removal; zod .optional() requires undefined not empty string
 
 ### Roadmap Evolution
 
@@ -115,6 +119,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-19T13:33:58.302Z
-Stopped at: Phase 999.2.2 context gathered
-Resume file: .planning/phases/999.2.2-fix-compose-mounts-and-terminal-env/999.2.2-CONTEXT.md
+Last session: 2026-04-19T14:14:36.109Z
+Stopped at: Completed 999.2.2-01-PLAN.md — Phase 999.2 approved (nyquist_compliant: true)
+Resume file: None
