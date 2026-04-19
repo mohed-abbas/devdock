@@ -28,6 +28,14 @@ COPY . .
 ARG NEXT_PUBLIC_PREVIEW_DOMAIN=""
 ENV NEXT_PUBLIC_PREVIEW_DOMAIN=${NEXT_PUBLIC_PREVIEW_DOMAIN}
 ENV NEXT_TELEMETRY_DISABLED=1
+# GAP-2 fix (phase 999.2.1): Next.js 15 page-data collection at build time
+# evaluates src/lib/config.ts:loadConfig() which throws on missing DATABASE_URL
+# / AUTH_SECRET. These placeholders are scoped to the builder stage ONLY and
+# are obviously fake. Real values flow at runtime via compose env_file: .env.
+ARG DATABASE_URL=postgresql://placeholder:placeholder@localhost:5432/placeholder
+ENV DATABASE_URL=${DATABASE_URL}
+ARG AUTH_SECRET=build-time-placeholder-32chars-min-padding
+ENV AUTH_SECRET=${AUTH_SECRET}
 RUN npm run build
 
 # ---------- Stage 3: app-runner — Next.js standalone runtime ----------
