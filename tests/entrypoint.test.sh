@@ -37,6 +37,8 @@ done
 # Precomputed bcrypt hash of "test-password-123" at rounds=12 (stable for the test)
 TEST_HASH='$2b$12$abcdefghijklmnopqrstuvABCDEFGHIJKLMNOPQRSTUVWXYZ1234567'
 
+export POSTGRES_HOST=127.0.0.1
+export POSTGRES_PORT=55432
 export DATABASE_URL="postgresql://devdock:testpw@127.0.0.1:55432/devdock"
 export ADMIN_USERNAME="entrypoint-test-admin"
 export ADMIN_PASSWORD_HASH="${TEST_HASH}"
