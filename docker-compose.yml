@@ -144,6 +144,7 @@ services:
     restart: unless-stopped
     environment:
       NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-devdock}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-devdock}
       DOCKER_SOCKET: /var/run/docker.sock
       DOCKER_GID: ${DOCKER_GID:-}
       TERMINAL_PORT: "3001"
