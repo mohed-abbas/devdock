@@ -100,9 +100,12 @@ services:
       TERMINAL_PORT: "3001"
       PRODUCTION_APPS_DIR: ${PRODUCTION_APPS_DIR:-}
       PREVIEW_DOMAIN: ${PREVIEW_DOMAIN:-}
-      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
-      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
-      GITHUB_TOKEN_ENCRYPTION_KEY: ${GITHUB_TOKEN_ENCRYPTION_KEY:-}
+      # Optional — compose maps these env_file pass-throughs. Empty strings would
+      # fail zod .min(1)/regex validation in src/lib/config.ts envSchema
+      # (GITHUB_* are .optional() but not .default('')). Use the env_file
+      # pass-through form (single-element env list of "KEY") so compose only
+      # sets each key when it is defined on the host (in .env) — absent on
+      # host means undefined in container, which zod .optional() accepts.
       ADMIN_USERNAME: ${ADMIN_USERNAME:-}
       ADMIN_PASSWORD_HASH: ${ADMIN_PASSWORD_HASH:-}
       CADDY_ADMIN_URL: ${CADDY_ADMIN_URL:-http://caddy:2019}
@@ -142,6 +145,11 @@ services:
       target: terminal-runner
     container_name: devdock-terminal
     restart: unless-stopped
+    # Absolute tsx path — `/app/node_modules/.bin` is not on the base node:22-slim PATH,
+    # so `exec gosu termuser tsx ...` fails with "tsx: executable file not found in $PATH".
+    # Using the absolute path bypasses PATH lookup entirely. (Surfaced after GAP-5 fix
+    # let the container reach CMD exec instead of crashing at loadConfig().)
+    command: ["/app/node_modules/.bin/tsx", "server/terminal-server.ts"]
     environment:
       NODE_ENV: production
       DATABASE_URL: postgresql://${POSTGRES_USER:-devdock}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-devdock}
