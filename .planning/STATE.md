@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-04-08)
 Phase: 999.2.2
 Plan: Not started
 Status: Phase complete — ready for verification
-Last activity: 2026-04-19
+Last activity: 2026-04-26 - Completed quick task 260426-vk1: Fix GitHub OAuth state cookie not surviving callback on http://localhost
 
 Progress: [██████████] 100%
 
@@ -117,6 +117,12 @@ None yet.
 - Open question: VPS RAM/disk capacity (affects concurrent environment cap in Phase 7)
 - Open question: Exact nginx config structure under /home/murx/shared/nginx
 - Open question: Whether mohed_abbas is in the docker group
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260426-vk1 | Fix GitHub OAuth state cookie not surviving callback on http://localhost | 2026-04-26 | 1ace7d6 | [260426-vk1-fix-github-oauth-state-cookie-not-surviv](./quick/260426-vk1-fix-github-oauth-state-cookie-not-surviv/) |
 
 ## Session Continuity
 
