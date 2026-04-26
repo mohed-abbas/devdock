@@ -15,7 +15,7 @@ export async function GET() {
   const cookieStore = await cookies();
   cookieStore.set('github_oauth_state', state, {
     httpOnly: true,
-    secure: true,
+    secure: config.AUTH_URL?.startsWith('https://') ?? false,
     sameSite: 'lax',
     maxAge: 600,
     path: '/',

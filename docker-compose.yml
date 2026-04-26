@@ -108,6 +108,13 @@ services:
       # host means undefined in container, which zod .optional() accepts.
       ADMIN_USERNAME: ${ADMIN_USERNAME:-}
       ADMIN_PASSWORD_HASH: ${ADMIN_PASSWORD_HASH:-}
+      # GITHUB_* — bare interpolation without default. When the var is set in .env,
+      # compose injects it. When unset, compose emits a warning and injects an empty
+      # string, which fails zod .min(1)/.regex() at app init — loud rather than the
+      # silent "integration not configured" failure mode.
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
+      GITHUB_TOKEN_ENCRYPTION_KEY: ${GITHUB_TOKEN_ENCRYPTION_KEY}
       CADDY_ADMIN_URL: ${CADDY_ADMIN_URL:-http://caddy:2019}
       CADDY_INTERNAL_PORT: ${CADDY_INTERNAL_PORT:-8080}
     volumes:
