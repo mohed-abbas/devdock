@@ -35,7 +35,7 @@ export function CreateEnvironmentDialog({ onCreated }: CreateEnvironmentDialogPr
   const [selectedRepo, setSelectedRepo] = useState<RepoItem | null>(null);
   const [selectedBranch, setSelectedBranch] = useState('');
   const [manualMode, setManualMode] = useState(false);
-  const [previewPort, setPreviewPort] = useState<string>('');
+  const [previewPort, setPreviewPort] = useState<string>('3000');
   const formRef = useRef<HTMLFormElement>(null);
 
   const { connected, loading: connectionLoading } = useGitHubConnection();
@@ -48,7 +48,7 @@ export function CreateEnvironmentDialog({ onCreated }: CreateEnvironmentDialogPr
     setSelectedRepo(null);
     setSelectedBranch('');
     setManualMode(false);
-    setPreviewPort('');
+    setPreviewPort('3000');
     formRef.current?.reset();
   }
 
@@ -254,7 +254,7 @@ export function CreateEnvironmentDialog({ onCreated }: CreateEnvironmentDialogPr
               onChange={(e) => setPreviewPort(e.target.value)}
             />
             <p className="text-sm text-muted-foreground">
-              Port your app listens on inside the container (optional)
+              Port your dev server listens on inside the container (defaults to 3000 — clear if not needed)
             </p>
           </div>
 
