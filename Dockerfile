@@ -115,6 +115,11 @@ COPY --from=builder --chown=nextjs:nodejs /app/src/lib/db/schema.ts ./src/lib/db
 # seed-admin-boot.ts + the drizzle/pg pieces it imports (run via tsx from entrypoint).
 COPY --from=builder --chown=nextjs:nodejs /app/src/scripts/seed-admin-boot.ts ./src/scripts/seed-admin-boot.ts
 
+# Compose template read at runtime by src/lib/docker/compose-generator.ts via
+# `path.join(process.cwd(), 'docker/templates/base-compose.yml')`. Without this
+# COPY the production image fails ENOENT the first time a user creates an env.
+COPY --from=builder --chown=nextjs:nodejs /app/docker ./docker
+
 # Entrypoint script (authored in Plan 04). The COPY reference below is part of
 # the Dockerfile contract; it will resolve once Plan 04 ships the real
 # `scripts/entrypoint-app.sh`. Plan 03 does NOT create stub entrypoints — those
