@@ -11,14 +11,14 @@ import { Octokit } from '@octokit/rest';
 
 export async function GET(request: NextRequest) {
   const session = await auth();
-  if (!session?.user?.id) return Response.redirect(new URL('/login', request.url));
+  if (!session?.user?.id) return Response.redirect(new URL('/login', config.AUTH_URL ?? request.url));
 
   const { searchParams } = new URL(request.url);
   const code = searchParams.get('code');
   const state = searchParams.get('state');
   const error = searchParams.get('error');
 
-  const settingsUrl = new URL('/dashboard/settings', request.url);
+  const settingsUrl = new URL('/dashboard/settings', config.AUTH_URL ?? request.url);
 
   if (error) {
     settingsUrl.searchParams.set('github_error', 'oauth_denied');
