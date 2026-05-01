@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
   turbopack: {
     resolveAlias: {
       'shadcn/tailwind.css': './node_modules/shadcn/dist/tailwind.css',
+      'tw-animate-css': './node_modules/tw-animate-css/dist/tw-animate.css',
     },
   },
 };
