@@ -33,8 +33,15 @@ function extractEnvIdFromHost(host: string | null): string | null {
   // Strip port first (e.g., ":3000" in local dev)
   const hostname = host.split(':')[0];
   const previewDomain = config.PREVIEW_DOMAIN.split(':')[0]; // Strip port from config too
-  if (!previewDomain || !hostname.endsWith(previewDomain)) return null;
-  const prefix = hostname.slice(0, hostname.length - previewDomain.length - 1); // -1 for the dot
+  if (!previewDomain) return null;
+  // Require the previewDomain to be a true subdomain suffix (preceded by a dot),
+  // not just any string ending with the same characters. Otherwise a host like
+  // `evil-127.0.0.1.nip.io` could be parsed against suffix `127.0.0.1.nip.io`
+  // and slice out a prefix that, while it would still need to pass UUID
+  // validation, is also rejected at the parsing layer for defense-in-depth.
+  const suffix = `.${previewDomain}`;
+  if (!hostname.endsWith(suffix)) return null;
+  const prefix = hostname.slice(0, hostname.length - suffix.length);
   // Validate UUID format (basic check)
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(prefix)) {
     return null;
