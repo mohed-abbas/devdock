@@ -110,6 +110,11 @@ services:
       TERMINAL_PORT: "3001"
       PRODUCTION_APPS_DIR: ${PRODUCTION_APPS_DIR:-}
       PREVIEW_DOMAIN: ${PREVIEW_DOMAIN:-}
+      # NEXT_PUBLIC_PREVIEW_DOMAIN is passed both as a build arg (above) for prod
+      # bundles and as a runtime env var here for dev mode (Turbopack reads it
+      # from process.env at request time). Without the runtime var, the Preview
+      # button on env cards stays hidden in dev.
+      NEXT_PUBLIC_PREVIEW_DOMAIN: ${NEXT_PUBLIC_PREVIEW_DOMAIN:-}
       # Optional — compose maps these env_file pass-throughs. Empty strings would
       # fail zod .min(1)/regex validation in src/lib/config.ts envSchema
       # (GITHUB_* are .optional() but not .default('')). Use the env_file
