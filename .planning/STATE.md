@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: verifying
-stopped_at: "Completed 999.2.2-01-PLAN.md — Phase 999.2 approved (nyquist_compliant: true)"
-last_updated: "2026-04-19T14:20:35.847Z"
-last_activity: 2026-04-19
+status: complete
+stopped_at: "Phase 999.2.2 closed — milestone v1.0 done; subsequent work is quick-task polish only"
+last_updated: "2026-05-01T16:30:00.000Z"
+last_activity: 2026-05-01
 progress:
   total_phases: 11
-  completed_phases: 9
+  completed_phases: 11
   total_plans: 35
   completed_plans: 35
   percent: 100
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-08)
 
 **Core value:** Enable productive remote development on any project from anywhere so a Claude Code Max subscription isn't wasted
-**Current focus:** Phase null — fix-compose-mounts-and-terminal-env
+**Current focus:** Milestone complete — preview-routing chain fixed end-to-end via quick tasks. Idle.
 
 ## Current Position
 
-Phase: 999.2.2
-Plan: Not started
-Status: Phase complete — ready for verification
+Phase: 999.2.2 (closed)
+Plan: All complete
+Status: Milestone v1.0 closed. Subsequent fixes captured as quick tasks (260501-mqx → 260501-p58).
 Last activity: 2026-05-01 - Completed quick task 260501-p58: Fix preview routing end-to-end (6 cascading bugs)
 
 Progress: [██████████] 100%
@@ -133,6 +133,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-19T14:14:36.109Z
-Stopped at: Completed 999.2.2-01-PLAN.md — Phase 999.2 approved (nyquist_compliant: true)
+Last session: 2026-05-01T16:30:00.000Z
+Stopped at: Milestone v1.0 closed. Six post-phase quick tasks landed on 2026-05-01 (mqx, ihv, ia1, gx3, vk1, obf, ogb, p58) covering Socket.IO connectivity, Tailwind v4 dev regression, GitHub OAuth host scoping, and full preview-routing chain.
 Resume file: None
+Notes: `next dev` failure observed in mohed-abbas/portfolio is a portfolio-side `output: 'export'` issue (Next.js 16 silent-exit regression), not a DevDock concern.

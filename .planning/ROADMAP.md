@@ -195,7 +195,9 @@ Plans:
 **Requirements:** None (gap-closure for 999.2 — no new REQ-IDs)
 **Plans:** TBD — run `/gsd-plan-phase 999.2.1`
 
-### Phase 999.2.2: Fix compose mount paths and terminal env (INSERTED)
+### Phase 999.2.2: Fix compose mount paths and terminal env (CLOSED 2026-05-01)
+
+**Status:** Complete. `999.2.2-VERIFICATION.md` status: passed. Six post-phase quick tasks (260501-mqx, ihv, ia1, gx3, vk1, obf, ogb, p58) closed cascade defects surfaced during E2E retesting (Socket.IO connectivity, Tailwind v4 dev regression, OAuth host scoping, full preview-routing chain). Tracked in STATE.md "Quick Tasks Completed".
 
 **Goal:** Close the two stack-smoke gaps surfaced after 999.2.1 unblocked the earlier stages of Plan 10's gate, so `bash scripts/stack-smoke.sh` × 2 exits 0 end-to-end and `999.2-VALIDATION.md` can flip to `nyquist_compliant: true`.
 **Why:** Phase 999.2.1 closed the original GAP-1 (entrypoint POSTGRES_PORT) and GAP-2 (Dockerfile builder placeholders), plus an inline GAP-3 (Caddyfile `persist_config`). Running Plan 10's gate past those unblocks revealed two more pre-existing defects: (GAP-4) `docker-compose.yml` bind-mounts hard-code `/srv/devdock/*` production paths using the `${VAR}:${VAR}` pattern, which breaks local dev on Darwin; (GAP-5) the `terminal` service env block is missing `DATABASE_URL`, but `server/terminal-server.ts` imports `src/lib/config.ts` which hard-fails at boot without it. Both are small changes but both are required before the Plan 10 × 2 idempotency gate can go fully green.
