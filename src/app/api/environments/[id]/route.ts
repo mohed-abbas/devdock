@@ -9,10 +9,14 @@ import { composeDown, removeDataDir, getProjectStatus } from '@/lib/docker/docke
 import { deregisterPreviewRoute, registerPreviewRoute } from '@/lib/docker/caddy-lifecycle';
 import { config } from '@/lib/config';
 
-const patchSchema = z.object({
-  name: z.string().min(1, 'Name is required.').max(100),
-  previewPort: z.coerce.number().int().min(1).max(65535).nullable(),
-});
+const patchSchema = z
+  .object({
+    name: z.string().min(1, 'Name is required.').max(100).optional(),
+    previewPort: z.coerce.number().int().min(1).max(65535).nullable().optional(),
+  })
+  .refine((d) => d.name !== undefined || d.previewPort !== undefined, {
+    message: 'No fields to update.',
+  });
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -163,20 +167,26 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 
   const { name, previewPort } = parsed.data;
 
+  const updates: { name?: string; previewPort?: number | null; updatedAt: Date } = {
+    updatedAt: new Date(),
+  };
+  if (name !== undefined) updates.name = name;
+  if (previewPort !== undefined) updates.previewPort = previewPort;
+
   const [updated] = await db
     .update(environments)
-    .set({
-      name,
-      previewPort,
-      updatedAt: new Date(),
-    })
+    .set(updates)
     .where(and(eq(environments.id, id), eq(environments.userId, session.user.id)))
     .returning();
 
   // Hot-update Caddy preview route when previewPort changes on a running env.
   // Without this, users have to stop+start to surface a port set after creation.
   // No-ops on stopped envs; `start` re-registers on the next start.
-  if (updated.status === 'running' && previewPort !== env.previewPort) {
+  if (
+    previewPort !== undefined &&
+    updated.status === 'running' &&
+    previewPort !== env.previewPort
+  ) {
     if (previewPort) {
       await registerPreviewRoute({
         id: updated.id,
