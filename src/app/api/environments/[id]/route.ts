@@ -216,13 +216,32 @@ export async function PATCH(request: NextRequest, { params }: Params) {
     }
   }
 
-  if (previewError) {
-    const [withWarning] = await db
-      .update(environments)
-      .set({ errorMessage: previewError.message.slice(0, 500) })
-      .where(and(eq(environments.id, id), eq(environments.userId, session.user.id)))
-      .returning();
-    return NextResponse.json(withWarning);
+  // Persist the preview-routing outcome:
+  //   - failure → set errorMessage with the warning so the env card surfaces it
+  //   - success on a running env that had a stale warning → clear errorMessage
+  //     so a successful retry doesn't leave the prior tooltip lingering
+  // Stop+start also clears errorMessage on the next start (start/route.ts:75).
+  if (
+    previewPort !== undefined &&
+    updated.status === 'running' &&
+    previewPort !== env.previewPort
+  ) {
+    if (previewError) {
+      const [withWarning] = await db
+        .update(environments)
+        .set({ errorMessage: previewError.message.slice(0, 500) })
+        .where(and(eq(environments.id, id), eq(environments.userId, session.user.id)))
+        .returning();
+      return NextResponse.json(withWarning);
+    }
+    if (updated.errorMessage) {
+      const [cleared] = await db
+        .update(environments)
+        .set({ errorMessage: null })
+        .where(and(eq(environments.id, id), eq(environments.userId, session.user.id)))
+        .returning();
+      return NextResponse.json(cleared);
+    }
   }
 
   return NextResponse.json(updated);

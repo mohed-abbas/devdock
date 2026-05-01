@@ -10,15 +10,23 @@ import { eq } from 'drizzle-orm';
 import { Octokit } from '@octokit/rest';
 
 export async function GET(request: NextRequest) {
+  // AUTH_URL is required so all redirects pin to the canonical host the
+  // GitHub OAuth app was registered against. Authorize already enforces
+  // this; the same guard here keeps callback consistent and avoids
+  // ?? request.url leaking 127.0.0.1:8080 / non-canonical hosts.
+  if (!config.AUTH_URL) {
+    return new Response('AUTH_URL not configured', { status: 503 });
+  }
+
   const session = await auth();
-  if (!session?.user?.id) return Response.redirect(new URL('/login', config.AUTH_URL ?? request.url));
+  if (!session?.user?.id) return Response.redirect(new URL('/login', config.AUTH_URL));
 
   const { searchParams } = new URL(request.url);
   const code = searchParams.get('code');
   const state = searchParams.get('state');
   const error = searchParams.get('error');
 
-  const settingsUrl = new URL('/dashboard/settings', config.AUTH_URL ?? request.url);
+  const settingsUrl = new URL('/dashboard/settings', config.AUTH_URL);
 
   if (error) {
     settingsUrl.searchParams.set('github_error', 'oauth_denied');
