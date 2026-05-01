@@ -50,6 +50,11 @@ services:
       # host portion of AUTH_URL so Auth.js cookies are scoped to the same host the
       # browser uses for /api/*. Default mirrors the compose default for AUTH_URL.
       CANONICAL_HOST: ${CANONICAL_HOST:-localhost:${CADDY_INTERNAL_PORT:-8080}}
+      # Host portion of PREVIEW_DOMAIN (no port). Used by the @noncanonical
+      # matcher in the Caddyfile to exempt preview subdomains from the
+      # canonical-host redirect — without this, dynamically-registered preview
+      # routes are never reached. Defaults to the local-dev nip.io pattern.
+      PREVIEW_HOST: ${PREVIEW_HOST:-127.0.0.1.nip.io}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data

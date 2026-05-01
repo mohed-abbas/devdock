@@ -41,14 +41,21 @@
     # BEFORE Auth.js issues any Set-Cookie. Canonical host is supplied via the
     # CANONICAL_HOST env var on the caddy service (see docker-compose.yml).
     #
-    # NOTE: We use Caddyfile-time substitution `{$CANONICAL_HOST}` (NOT runtime
-    # `{env.CANONICAL_HOST}`). Runtime placeholders are NOT expanded inside the
-    # `header_regexp` pattern argument — Caddy compiles the regex at startup with
-    # the literal placeholder text, which never matches a real Host header and
-    # causes EVERY request (including the canonical one) to redirect, producing
-    # an infinite loop. Caddyfile-time `{$VAR}` substitutes at config-adapt time,
-    # baking the literal value into the compiled regex.
-    @noncanonical not header_regexp Host (?i)^{$CANONICAL_HOST}$
+    # The matcher AND-combines its conditions, so we exempt preview subdomains
+    # (e.g. {env-uuid}.127.0.0.1.nip.io[:port]) by adding a second `not` clause.
+    # Without this exemption, dynamically-registered preview routes never get
+    # reached because the canonical-host redirect intercepts the request first.
+    #
+    # NOTE: We use Caddyfile-time substitution `{$CANONICAL_HOST}` and
+    # `{$PREVIEW_HOST}` (NOT runtime `{env.…}`). Runtime placeholders are NOT
+    # expanded inside the `header_regexp` pattern argument — Caddy compiles the
+    # regex at startup with the literal placeholder text, which never matches a
+    # real Host header and causes EVERY request to redirect, producing an
+    # infinite loop. Caddyfile-time `{$VAR}` substitutes at config-adapt time.
+    @noncanonical {
+        not header_regexp Host (?i)^{$CANONICAL_HOST}$
+        not header_regexp Host (?i)\.{$PREVIEW_HOST}(:\d+)?$
+    }
     redir @noncanonical http://{$CANONICAL_HOST}{uri} 308
 
     # Socket.IO path (terminal auth + /logs namespace — see server/terminal-server.ts).
