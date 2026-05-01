@@ -114,9 +114,15 @@ export async function addPreviewRoute(input: AddPreviewRouteInput): Promise<void
     /* swallow — delete is best-effort */
   }
 
-  // Step 2: POST the new route to the server's routes array.
-  const res = await fetch(`${adminUrl()}/config/apps/http/servers/${serverKey}/routes`, {
-    method: 'POST',
+  // Step 2: PUT the new route at index 0 of the server's routes array.
+  // POSTing to .../routes appends to the END, which puts the preview route
+  // AFTER the static Caddyfile catch-all (`handle { reverse_proxy app:3000 }`).
+  // Caddy matches routes top-to-bottom, so an end-appended preview route is
+  // shadowed by the catch-all and never fires. Inserting at index 0 ensures
+  // preview routes are matched before any static handler — and `terminal: true`
+  // prevents them from interfering with non-preview hosts.
+  const res = await fetch(`${adminUrl()}/config/apps/http/servers/${serverKey}/routes/0`, {
+    method: 'PUT',
     headers: adminFetchHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify(route),
   });
