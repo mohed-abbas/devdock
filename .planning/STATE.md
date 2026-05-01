@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-04-08)
 Phase: 999.2.2
 Plan: Not started
 Status: Phase complete — ready for verification
-Last activity: 2026-05-01 - Completed quick task 260501-ogb: Pre-fill Edit Environment Preview Port with 3000 when unset
+Last activity: 2026-05-01 - Completed quick task 260501-p58: Fix preview routing end-to-end (6 cascading bugs)
 
 Progress: [██████████] 100%
 
@@ -129,6 +129,7 @@ None yet.
 | 260501-mqx | Fix terminal Socket.IO CORS by switching to same-origin connection; cascade-fixed terminal-server bind from 127.0.0.1 → 0.0.0.0 | 2026-05-01 | 93e2a08 | [260501-mqx-fix-terminal-socket-io-cors-by-switching](./quick/260501-mqx-fix-terminal-socket-io-cors-by-switching/) |
 | 260501-obf | Default previewPort to 3000 in New Environment dialog so envs ship with a working preview port | 2026-05-01 | 8ad9a7a | [260501-obf-default-previewport-to-3000-in-new-envir](./quick/260501-obf-default-previewport-to-3000-in-new-envir/) |
 | 260501-ogb | Pre-fill Edit Environment Preview Port with 3000 when currently unset (one-click upgrade for legacy envs) | 2026-05-01 | fb9fdbb | [260501-ogb-default-edit-environment-previewport-to-](./quick/260501-ogb-default-edit-environment-previewport-to-/) |
+| 260501-p58 | Fix preview routing end-to-end — 6 cascading bugs across PATCH lifecycle, Caddy origins/order, env config, and dev runtime vars | 2026-05-01 | 9804d73 | [260501-p58-fix-preview-routing-end-to-end-register-](./quick/260501-p58-fix-preview-routing-end-to-end-register-/) |
 
 ## Session Continuity
 
