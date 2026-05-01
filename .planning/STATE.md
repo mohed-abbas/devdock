@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-04-08)
 Phase: 999.2.2
 Plan: Not started
 Status: Phase complete — ready for verification
-Last activity: 2026-04-26 - Completed quick task 260426-vk1: Fix GitHub OAuth state cookie not surviving callback on http://localhost
+Last activity: 2026-05-01 - Completed quick task 260501-gx3: Harden GitHub OAuth callback redirects to use AUTH_URL as canonical host
 
 Progress: [██████████] 100%
 
@@ -123,6 +123,7 @@ None yet.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 260426-vk1 | Fix GitHub OAuth state cookie not surviving callback on http://localhost | 2026-04-26 | 1ace7d6 | [260426-vk1-fix-github-oauth-state-cookie-not-surviv](./quick/260426-vk1-fix-github-oauth-state-cookie-not-surviv/) |
+| 260501-gx3 | Harden GitHub OAuth callback redirects to use AUTH_URL as canonical host | 2026-05-01 | 333befb | [260501-gx3-harden-github-oauth-callback-redirects-t](./quick/260501-gx3-harden-github-oauth-callback-redirects-t/) |
 
 ## Session Continuity
 
