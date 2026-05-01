@@ -70,7 +70,7 @@ export function TerminalClient({
       socketRef.current = null;
     }
 
-    const terminalServerUrl = process.env.NEXT_PUBLIC_TERMINAL_URL || 'http://localhost:3001';
+    const terminalServerUrl = process.env.NEXT_PUBLIC_TERMINAL_URL || '';
     const socket = io(`${terminalServerUrl}/terminal`, {
       path: '/ws/socket.io',
       auth: { token },
