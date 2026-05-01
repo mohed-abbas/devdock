@@ -16,7 +16,14 @@
 
 {
     # Admin API — compose-internal only (T-999.2-02).
-    admin :2019
+    # `origins` must include the in-network hostname the app uses to reach the
+    # admin endpoint (CADDY_ADMIN_URL=http://caddy:2019), otherwise Caddy
+    # rejects with 403 "client is not allowed to access from origin ''" because
+    # the default origins allowlist is the listen address only — and Node's
+    # fetch does not set an Origin header so Caddy falls back to Host matching.
+    admin :2019 {
+        origins caddy:2019 localhost:2019 127.0.0.1:2019
+    }
 
     # No automatic HTTPS issuance — host nginx terminates TLS (D-03).
     auto_https off

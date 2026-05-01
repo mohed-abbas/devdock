@@ -23,6 +23,17 @@ function adminUrl(): string {
   return process.env.CADDY_ADMIN_URL || 'http://caddy:2019';
 }
 
+// Caddy's admin endpoint enforces an origin allowlist. Node's fetch (undici)
+// doesn't set an Origin header but DOES set sec-fetch-mode:cors, which trips
+// Caddy's enforcement and yields 403 "client is not allowed to access from
+// origin ''". Pinning the Origin header to the admin URL makes the request
+// pass the allowlist that the Caddyfile configures (origins caddy:2019 ...).
+function adminFetchHeaders(extra?: HeadersInit): Headers {
+  const h = new Headers(extra);
+  h.set('Origin', adminUrl());
+  return h;
+}
+
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const CONTAINER_NAME_RE = /^devdock-[a-z0-9-]+-dev$/;
 const SLUG_RE = /^[a-z0-9-]+$/;
@@ -36,7 +47,7 @@ function truncate(s: string): string {
 export async function getServerKey(): Promise<string> {
   if (cachedServerKey) return cachedServerKey;
   const url = `${adminUrl()}/config/apps/http/servers/`;
-  const res = await fetch(url, { method: 'GET' });
+  const res = await fetch(url, { method: 'GET', headers: adminFetchHeaders() });
   if (!res.ok) {
     const body = await res.text().catch(() => '');
     throw new Error(truncate(`caddy admin GET servers failed: ${res.status} ${body}`));
@@ -95,7 +106,10 @@ export async function addPreviewRoute(input: AddPreviewRouteInput): Promise<void
 
   // Step 1: best-effort delete (ignore 404, ignore network errors — POST will surface real problems).
   try {
-    await fetch(`${adminUrl()}/id/${routeId}`, { method: 'DELETE' });
+    await fetch(`${adminUrl()}/id/${routeId}`, {
+      method: 'DELETE',
+      headers: adminFetchHeaders(),
+    });
   } catch {
     /* swallow — delete is best-effort */
   }
@@ -103,7 +117,7 @@ export async function addPreviewRoute(input: AddPreviewRouteInput): Promise<void
   // Step 2: POST the new route to the server's routes array.
   const res = await fetch(`${adminUrl()}/config/apps/http/servers/${serverKey}/routes`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: adminFetchHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify(route),
   });
   if (!res.ok) {
@@ -117,7 +131,10 @@ export async function removePreviewRoute(envSlug: string): Promise<void> {
     throw new Error(`invalid envSlug: must match ${SLUG_RE}`);
   }
   const routeId = `preview-${envSlug}`;
-  const res = await fetch(`${adminUrl()}/id/${routeId}`, { method: 'DELETE' });
+  const res = await fetch(`${adminUrl()}/id/${routeId}`, {
+    method: 'DELETE',
+    headers: adminFetchHeaders(),
+  });
   if (res.status === 404) return; // idempotent delete
   if (!res.ok) {
     const body = await res.text().catch(() => '');
