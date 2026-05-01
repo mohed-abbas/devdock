@@ -75,12 +75,13 @@ describe('getServerKey', () => {
 });
 
 describe('addPreviewRoute', () => {
-  it('performs DELETE then POST (idempotent upsert)', async () => {
+  it('performs DELETE then PUT-at-index-0 (idempotent head-insert)', async () => {
     // 1st call: getServerKey GET
     fetchMock.mockResolvedValueOnce(okResponse({ srv0: {} }));
     // 2nd call: DELETE existing
     fetchMock.mockResolvedValueOnce(notFoundResponse());
-    // 3rd call: POST new route
+    // 3rd call: PUT new route at index 0 (insert; appending via POST would land
+    // AFTER the static catch-all and be shadowed — see caddy-admin.ts:108-114)
     fetchMock.mockResolvedValueOnce(okResponse({}));
 
     const { addPreviewRoute } = await loadModule();
@@ -89,8 +90,8 @@ describe('addPreviewRoute', () => {
     expect(fetchMock).toHaveBeenCalledTimes(3);
     expect(fetchMock.mock.calls[1][0]).toBe('http://caddy.test:2019/id/preview-my-app');
     expect(fetchMock.mock.calls[1][1].method).toBe('DELETE');
-    expect(fetchMock.mock.calls[2][0]).toBe('http://caddy.test:2019/config/apps/http/servers/srv0/routes');
-    expect(fetchMock.mock.calls[2][1].method).toBe('POST');
+    expect(fetchMock.mock.calls[2][0]).toBe('http://caddy.test:2019/config/apps/http/servers/srv0/routes/0');
+    expect(fetchMock.mock.calls[2][1].method).toBe('PUT');
   });
 
   it('includes correct route body shape', async () => {

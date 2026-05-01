@@ -2,8 +2,10 @@
  * Caddy Admin API client — idempotent preview route management (Phase 999.2, D-11).
  *
  * Wire-level contract:
- *   - addPreviewRoute: DELETE /id/preview-{slug} (best-effort), then POST to routes array
- *     (RESEARCH.md §6; Pitfall 4 — the routes array has no native upsert, so we delete-then-post)
+ *   - addPreviewRoute: DELETE /id/preview-{slug} (best-effort), then PUT to /routes/0 (head-insert)
+ *     (RESEARCH.md §6; Pitfall 4 — the routes array has no native upsert, so we delete-then-PUT.
+ *     PUT-at-index-0 inserts at the head so the route is matched BEFORE the static catch-all;
+ *     POST-to-routes-array would append and the catch-all would shadow it.)
  *   - removePreviewRoute: DELETE /id/preview-{slug}; 404 is success (idempotent)
  *   - getServerKey: GET /config/apps/http/servers/ → first key (RESEARCH.md Pitfall 8 —
  *     "srv0" is convention but not guaranteed, so we discover at runtime + cache)
@@ -104,7 +106,7 @@ export async function addPreviewRoute(input: AddPreviewRouteInput): Promise<void
     terminal: true,
   };
 
-  // Step 1: best-effort delete (ignore 404, ignore network errors — POST will surface real problems).
+  // Step 1: best-effort delete (ignore 404, ignore network errors — the PUT below will surface real problems).
   try {
     await fetch(`${adminUrl()}/id/${routeId}`, {
       method: 'DELETE',
@@ -128,7 +130,7 @@ export async function addPreviewRoute(input: AddPreviewRouteInput): Promise<void
   });
   if (!res.ok) {
     const body = await res.text().catch(() => '');
-    throw new Error(truncate(`caddy admin POST route failed: ${res.status} ${body}`));
+    throw new Error(truncate(`caddy admin PUT route failed: ${res.status} ${body}`));
   }
 }
 
