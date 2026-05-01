@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-04-08)
 Phase: 999.2.2
 Plan: Not started
 Status: Phase complete — ready for verification
-Last activity: 2026-05-01 - Completed quick task 260501-ia1: Fix Turbopack 500: cannot resolve shadcn/tailwind.css import in src/app/globals.css
+Last activity: 2026-05-01 - Completed quick task 260501-ihv: Fix auth host-mismatch ghost dashboard via Caddy canonicalization
 
 Progress: [██████████] 100%
 
@@ -125,6 +125,7 @@ None yet.
 | 260426-vk1 | Fix GitHub OAuth state cookie not surviving callback on http://localhost | 2026-04-26 | 1ace7d6 | [260426-vk1-fix-github-oauth-state-cookie-not-surviv](./quick/260426-vk1-fix-github-oauth-state-cookie-not-surviv/) |
 | 260501-gx3 | Harden GitHub OAuth callback redirects to use AUTH_URL as canonical host | 2026-05-01 | 333befb | [260501-gx3-harden-github-oauth-callback-redirects-t](./quick/260501-gx3-harden-github-oauth-callback-redirects-t/) |
 | 260501-ia1 | Fix Turbopack 500: cannot resolve shadcn/tailwind.css import in src/app/globals.css | 2026-05-01 | af6d8fb | [260501-ia1-fix-turbopack-500-cannot-resolve-shadcn-](./quick/260501-ia1-fix-turbopack-500-cannot-resolve-shadcn-/) |
+| 260501-ihv | Fix auth host-mismatch ghost dashboard: canonicalize requests to AUTH_URL host at Caddy edge | 2026-05-01 | 0641e0a | [260501-ihv-fix-auth-host-mismatch-ghost-dashboard-c](./quick/260501-ihv-fix-auth-host-mismatch-ghost-dashboard-c/) |
 
 ## Session Continuity
 
