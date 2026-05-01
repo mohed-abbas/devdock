@@ -22,6 +22,12 @@ services:
       - ./package.json:/app/package.json
       - ./drizzle.config.ts:/app/drizzle.config.ts
       - ./middleware.ts:/app/middleware.ts
+      # postcss.config.mjs must be present so Turbopack discovers it and invokes
+      # @tailwindcss/postcss to process @tailwind utilities in globals.css.
+      # Without this mount the file is absent from the deps-stage image (COPY . . only
+      # runs in the builder stage), Turbopack silently falls back to plain CSS bundling,
+      # and @tailwind utilities / @apply directives pass through as raw text.
+      - ./postcss.config.mjs:/app/postcss.config.mjs
       # Anonymous volume preserves image node_modules / .next from host mount bleed.
       - /app/node_modules
       - /app/.next
