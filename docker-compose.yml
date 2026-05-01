@@ -45,6 +45,11 @@ services:
     image: caddy:2-alpine
     container_name: devdock-caddy
     restart: unless-stopped
+    environment:
+      # Canonical host:port for Caddy's host-canonicalization redir. Must match the
+      # host portion of AUTH_URL so Auth.js cookies are scoped to the same host the
+      # browser uses for /api/*. Default mirrors the compose default for AUTH_URL.
+      CANONICAL_HOST: ${CANONICAL_HOST:-localhost:${CADDY_INTERNAL_PORT:-8080}}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
