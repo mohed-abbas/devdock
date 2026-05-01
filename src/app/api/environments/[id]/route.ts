@@ -6,7 +6,7 @@ import { db } from '@/lib/db';
 import { environments } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { composeDown, removeDataDir, getProjectStatus } from '@/lib/docker/docker-service';
-import { deregisterPreviewRoute } from '@/lib/docker/caddy-lifecycle';
+import { deregisterPreviewRoute, registerPreviewRoute } from '@/lib/docker/caddy-lifecycle';
 import { config } from '@/lib/config';
 
 const patchSchema = z.object({
@@ -172,6 +172,21 @@ export async function PATCH(request: NextRequest, { params }: Params) {
     })
     .where(and(eq(environments.id, id), eq(environments.userId, session.user.id)))
     .returning();
+
+  // Hot-update Caddy preview route when previewPort changes on a running env.
+  // Without this, users have to stop+start to surface a port set after creation.
+  // No-ops on stopped envs; `start` re-registers on the next start.
+  if (updated.status === 'running' && previewPort !== env.previewPort) {
+    if (previewPort) {
+      await registerPreviewRoute({
+        id: updated.id,
+        slug: updated.slug,
+        previewPort,
+      });
+    } else {
+      await deregisterPreviewRoute(updated.slug);
+    }
+  }
 
   return NextResponse.json(updated);
 }
