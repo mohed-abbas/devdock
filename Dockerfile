@@ -9,12 +9,28 @@
 FROM node:22-slim AS deps
 WORKDIR /app
 # Build-essential + python are needed transiently for bcrypt's node-gyp on first install.
+# git is also needed at *runtime* by docker-compose.override.yml's dev mode, which
+# re-uses this stage as the running app container. docker-service.ts shells out
+# to `git clone` (env launch) and `docker compose ...` (env start/stop). The
+# production app-runner stage installs the same tooling separately for prod runs.
 RUN apt-get update && apt-get install -y --no-install-recommends \
       ca-certificates \
       python3 \
       make \
       g++ \
+      git \
+      wget \
     && rm -rf /var/lib/apt/lists/*
+
+# wget above is also required by the compose-level healthcheck
+# (`wget -qO- http://localhost:3000/api/health`) which runs against this stage
+# in dev mode (docker-compose.override.yml uses target: deps).
+
+# Docker CLI + Compose v2 plugin — required for dev override which runs the app
+# Next.js dev server out of this stage. See app-runner stage for rationale.
+COPY --from=docker:28-cli /usr/local/bin/docker /usr/local/bin/docker
+COPY --from=docker:28-cli /usr/local/libexec/docker/cli-plugins/docker-compose /usr/local/libexec/docker/cli-plugins/docker-compose
+
 COPY package.json package-lock.json ./
 # `npm ci` uses lockfile — reproducible, faster than install.
 RUN npm ci
@@ -51,12 +67,25 @@ ENV HOSTNAME=0.0.0.0
 #   - postgresql-client → pg_isready, used by entrypoint (RESEARCH.md §2)
 #   - wget       → healthcheck probe (compose healthcheck uses `wget -qO- ...`)
 #   - ca-certificates → outbound HTTPS (Caddy admin calls are plain HTTP, but GitHub/Anthropic APIs may be called from the app)
+#   - git        → used by docker-service.ts to clone GitHub repos when launching envs
 RUN apt-get update && apt-get install -y --no-install-recommends \
       gosu \
       postgresql-client \
       wget \
       ca-certificates \
+      git \
     && rm -rf /var/lib/apt/lists/*
+
+# Docker CLI + Compose v2 plugin from the official `docker:28-cli` image.
+# We need ONLY the client — the daemon lives on the host and is reached via
+# /var/run/docker.sock (mounted by docker-compose.yml). Multi-stage COPY is
+# ~30MB lighter than wiring the download.docker.com apt repo and avoids
+# pulling repo+key state into this image. docker-service.ts shells out to
+# `docker compose -p ... up -d` (subcommand form), so the compose plugin is
+# required — installing it under /usr/local/libexec/docker/cli-plugins/ is
+# the canonical location the docker CLI auto-discovers.
+COPY --from=docker:28-cli /usr/local/bin/docker /usr/local/bin/docker
+COPY --from=docker:28-cli /usr/local/libexec/docker/cli-plugins/docker-compose /usr/local/libexec/docker/cli-plugins/docker-compose
 
 # Non-root user — GID fixup happens at runtime in the entrypoint (Plan 04).
 RUN groupadd --system --gid 1001 nodejs \
