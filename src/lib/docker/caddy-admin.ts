@@ -129,6 +129,12 @@ export async function addPreviewRoute(input: AddPreviewRouteInput): Promise<void
     body: JSON.stringify(route),
   });
   if (!res.ok) {
+    // 404 means the cached serverKey no longer points at a valid server
+    // (e.g. Caddy was reconfigured at runtime and renamed/dropped the server).
+    // Drop the cache so the next call re-discovers via getServerKey().
+    if (res.status === 404) {
+      cachedServerKey = null;
+    }
     const body = await res.text().catch(() => '');
     throw new Error(truncate(`caddy admin PUT route failed: ${res.status} ${body}`));
   }
