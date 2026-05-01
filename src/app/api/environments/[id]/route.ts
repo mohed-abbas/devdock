@@ -6,13 +6,21 @@ import { db } from '@/lib/db';
 import { environments } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { composeDown, removeDataDir, getProjectStatus } from '@/lib/docker/docker-service';
-import { deregisterPreviewRoute, registerPreviewRoute } from '@/lib/docker/caddy-lifecycle';
+import {
+  deregisterPreviewRoute,
+  PreviewRegistrationError,
+  registerPreviewRoute,
+} from '@/lib/docker/caddy-lifecycle';
 import { config } from '@/lib/config';
 
-const patchSchema = z.object({
-  name: z.string().min(1, 'Name is required.').max(100),
-  previewPort: z.coerce.number().int().min(1).max(65535).nullable(),
-});
+const patchSchema = z
+  .object({
+    name: z.string().min(1, 'Name is required.').max(100).optional(),
+    previewPort: z.coerce.number().int().min(1).max(65535).nullable().optional(),
+  })
+  .refine((d) => d.name !== undefined || d.previewPort !== undefined, {
+    message: 'No fields to update.',
+  });
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -163,28 +171,76 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 
   const { name, previewPort } = parsed.data;
 
+  const updates: { name?: string; previewPort?: number | null; updatedAt: Date } = {
+    updatedAt: new Date(),
+  };
+  if (name !== undefined) updates.name = name;
+  if (previewPort !== undefined) updates.previewPort = previewPort;
+
   const [updated] = await db
     .update(environments)
-    .set({
-      name,
-      previewPort,
-      updatedAt: new Date(),
-    })
+    .set(updates)
     .where(and(eq(environments.id, id), eq(environments.userId, session.user.id)))
     .returning();
 
   // Hot-update Caddy preview route when previewPort changes on a running env.
   // Without this, users have to stop+start to surface a port set after creation.
   // No-ops on stopped envs; `start` re-registers on the next start.
-  if (updated.status === 'running' && previewPort !== env.previewPort) {
-    if (previewPort) {
-      await registerPreviewRoute({
-        id: updated.id,
-        slug: updated.slug,
-        previewPort,
-      });
-    } else {
-      await deregisterPreviewRoute(updated.slug);
+  //
+  // Caddy failures are surfaced via errorMessage (status stays 'running')
+  // — see start/route.ts for the same pattern. The PATCH still returns 200
+  // with the updated row so the dialog closes cleanly; the user discovers
+  // the preview-routing failure via the env card tooltip.
+  let previewError: PreviewRegistrationError | null = null;
+  if (
+    previewPort !== undefined &&
+    updated.status === 'running' &&
+    previewPort !== env.previewPort
+  ) {
+    try {
+      if (previewPort) {
+        await registerPreviewRoute({
+          id: updated.id,
+          slug: updated.slug,
+          previewPort,
+        });
+      } else {
+        await deregisterPreviewRoute(updated.slug);
+      }
+    } catch (err) {
+      if (err instanceof PreviewRegistrationError) {
+        previewError = err;
+      } else {
+        throw err;
+      }
+    }
+  }
+
+  // Persist the preview-routing outcome:
+  //   - failure → set errorMessage with the warning so the env card surfaces it
+  //   - success on a running env that had a stale warning → clear errorMessage
+  //     so a successful retry doesn't leave the prior tooltip lingering
+  // Stop+start also clears errorMessage on the next start (start/route.ts:75).
+  if (
+    previewPort !== undefined &&
+    updated.status === 'running' &&
+    previewPort !== env.previewPort
+  ) {
+    if (previewError) {
+      const [withWarning] = await db
+        .update(environments)
+        .set({ errorMessage: previewError.message.slice(0, 500) })
+        .where(and(eq(environments.id, id), eq(environments.userId, session.user.id)))
+        .returning();
+      return NextResponse.json(withWarning);
+    }
+    if (updated.errorMessage) {
+      const [cleared] = await db
+        .update(environments)
+        .set({ errorMessage: null })
+        .where(and(eq(environments.id, id), eq(environments.userId, session.user.id)))
+        .returning();
+      return NextResponse.json(cleared);
     }
   }
 

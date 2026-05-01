@@ -21,7 +21,13 @@ services:
       - ./tsconfig.json:/app/tsconfig.json
       - ./package.json:/app/package.json
       - ./drizzle.config.ts:/app/drizzle.config.ts
-      - ./middleware.ts:/app/middleware.ts
+      # docker/ holds the compose template (base-compose.yml) read by
+      # src/lib/docker/compose-generator.ts at runtime via process.cwd().
+      # The deps stage doesn't COPY it (only package.json + node_modules),
+      # so without this mount any env-create call fails ENOENT.
+      - ./docker:/app/docker
+      # middleware.ts lives at src/middleware.ts (already mounted via ./src above) —
+      # there is no top-level middleware.ts to bind-mount.
       # postcss.config.mjs must be present so Turbopack discovers it and invokes
       # @tailwindcss/postcss to process @tailwind utilities in globals.css.
       # Without this mount the file is absent from the deps-stage image (COPY . . only

@@ -19,6 +19,12 @@ interface StatusBadgeProps {
 
 export function StatusBadge({ status, errorMessage, className }: StatusBadgeProps) {
   const config = statusConfig[status];
+  // Surface errorMessage for both 'error' (start failed) and 'running' (env
+  // is up but a non-fatal warning is set — e.g. preview routing failed to
+  // register with Caddy). For 'running' we add a small warning indicator
+  // so users can see something needs attention without a full status flip.
+  const hasWarning = status === 'running' && Boolean(errorMessage);
+  const tooltip = errorMessage && (status === 'error' || hasWarning) ? errorMessage : undefined;
 
   return (
     <span
@@ -27,7 +33,7 @@ export function StatusBadge({ status, errorMessage, className }: StatusBadgeProp
         config.bg,
         className
       )}
-      title={status === 'error' && errorMessage ? errorMessage : undefined}
+      title={tooltip}
     >
       <span
         className={cn(
@@ -39,6 +45,14 @@ export function StatusBadge({ status, errorMessage, className }: StatusBadgeProp
       <span className={cn('text-sm font-semibold uppercase tracking-wide', config.text)}>
         {status === 'error' ? 'Error' : status.charAt(0).toUpperCase() + status.slice(1)}
       </span>
+      {hasWarning && (
+        <span
+          aria-hidden="true"
+          className="inline-flex size-4 items-center justify-center rounded-full bg-amber-500/20 text-[10px] font-bold text-amber-400"
+        >
+          !
+        </span>
+      )}
     </span>
   );
 }

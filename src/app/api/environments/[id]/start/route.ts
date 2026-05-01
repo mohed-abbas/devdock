@@ -5,7 +5,7 @@ import { db } from '@/lib/db';
 import { environments } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { composeUp } from '@/lib/docker/docker-service';
-import { registerPreviewRoute } from '@/lib/docker/caddy-lifecycle';
+import { PreviewRegistrationError, registerPreviewRoute } from '@/lib/docker/caddy-lifecycle';
 import { config } from '@/lib/config';
 
 type Params = { params: Promise<{ id: string }> };
@@ -92,11 +92,26 @@ export async function POST(request: NextRequest, { params }: Params) {
           .set({ status: 'running', lastActivityAt: new Date() })
           .where(eq(environments.id, envId));
         // Register preview route with Caddy (D-11, 999.2). No-op if PREVIEW_DOMAIN unset.
-        await registerPreviewRoute({
-          id: env.id,
-          slug: env.slug,
-          previewPort: env.previewPort,
-        });
+        // The env is already running at this point — a Caddy failure means the
+        // container works but its preview URL won't route. Surface the failure
+        // via errorMessage instead of flipping status to 'error'; the env card
+        // still shows green, with a tooltip explaining preview is unavailable.
+        try {
+          await registerPreviewRoute({
+            id: env.id,
+            slug: env.slug,
+            previewPort: env.previewPort,
+          });
+        } catch (err) {
+          if (err instanceof PreviewRegistrationError) {
+            await db
+              .update(environments)
+              .set({ errorMessage: err.message.slice(0, 500) })
+              .where(eq(environments.id, envId));
+          } else {
+            throw err;
+          }
+        }
       } else {
         await db
           .update(environments)

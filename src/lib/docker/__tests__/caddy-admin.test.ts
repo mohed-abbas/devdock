@@ -126,6 +126,27 @@ describe('addPreviewRoute', () => {
     const { addPreviewRoute } = await loadModule();
     await expect(addPreviewRoute({ ...validInput, envId: 'not-a-uuid' })).rejects.toThrow(/uuid|envId/i);
   });
+
+  it('invalidates cached serverKey on 404 from PUT (so retry re-discovers)', async () => {
+    // First addPreviewRoute call: GET servers → cache "srv0", DELETE 404, PUT 404
+    fetchMock.mockResolvedValueOnce(okResponse({ srv0: {} })); // GET servers
+    fetchMock.mockResolvedValueOnce(notFoundResponse()); // DELETE existing
+    fetchMock.mockResolvedValueOnce(errorResponse(404, 'server not found')); // PUT — stale cache
+
+    const { addPreviewRoute } = await loadModule();
+    await expect(addPreviewRoute(validInput)).rejects.toThrow(/404/);
+
+    // Second call: cache should be invalidated, so a fresh GET happens.
+    fetchMock.mockResolvedValueOnce(okResponse({ different: {} })); // GET re-discovers
+    fetchMock.mockResolvedValueOnce(notFoundResponse()); // DELETE
+    fetchMock.mockResolvedValueOnce(okResponse({})); // PUT succeeds
+
+    await addPreviewRoute(validInput);
+
+    // Confirm the second PUT used the fresh server key, not the stale "srv0".
+    const lastPutCall = fetchMock.mock.calls[fetchMock.mock.calls.length - 1];
+    expect(lastPutCall[0]).toBe('http://caddy.test:2019/config/apps/http/servers/different/routes/0');
+  });
 });
 
 describe('removePreviewRoute', () => {

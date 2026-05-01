@@ -12,12 +12,32 @@ interface EnvRecord {
 }
 
 /**
+ * Thrown when Caddy preview-route registration fails. Callers should catch
+ * this and persist a user-visible warning (e.g. environments.errorMessage)
+ * — the env itself may still be running, but its preview URL won't work
+ * until Caddy gets the route. Distinguishing this from generic Errors lets
+ * callers keep status='running' rather than flipping to 'error'.
+ */
+export class PreviewRegistrationError extends Error {
+  constructor(public readonly slug: string, cause: unknown) {
+    super(
+      `Preview routing unavailable for ${slug}: ${
+        cause instanceof Error ? cause.message : String(cause)
+      }`,
+    );
+    this.name = 'PreviewRegistrationError';
+  }
+}
+
+/**
  * Register a preview route for an environment that just started.
- * No-ops silently if:
+ * Returns silently (with no Caddy call) if:
  *   - PREVIEW_DOMAIN is unconfigured
  *   - env has no previewPort set
- * Logs but swallows errors from Caddy — environment start should not fail on a
- * proxy-registration hiccup (graceful degradation; next restart re-registers).
+ * Throws PreviewRegistrationError on Caddy failure so the caller can surface
+ * the failure to the user (the env may still be running fine — only preview
+ * routing is broken). Caller decides whether to flip status to 'error' or
+ * persist a warning while keeping status='running'.
  */
 export async function registerPreviewRoute(env: EnvRecord): Promise<void> {
   if (!config.PREVIEW_DOMAIN) return;
@@ -38,6 +58,7 @@ export async function registerPreviewRoute(env: EnvRecord): Promise<void> {
       `[caddy-lifecycle] failed to register preview for ${env.slug}:`,
       err instanceof Error ? err.message : err,
     );
+    throw new PreviewRegistrationError(env.slug, err);
   }
 }
 
