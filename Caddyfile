@@ -1,0 +1,79 @@
+# Caddyfile — DevDock internal reverse proxy (Phase 999.2)
+#
+# Host topology:
+#   host nginx (ports 80 and 443, TLS)
+#     └→ 127.0.0.1:${CADDY_INTERNAL_PORT:-8080} (this Caddy)
+#         ├→ app:3000            (Next.js dashboard + API)
+#         ├→ terminal:3001       (Socket.IO — /ws/*)
+#         └→ devdock-{slug}-dev  (per-project preview — registered at runtime via Admin API)
+#
+# Security:
+#   - D-03: HTTP-only inside the stack. Host nginx handles TLS. No cert volumes here.
+#   - Admin API on :2019 binds to 0.0.0.0 for compose-internal reachability,
+#     BUT port 2019 is NEVER published to the host (T-999.2-02).
+#   - RESEARCH.md Pitfall 3: default `localhost:2019` is container-local — unreachable
+#     from `app`. `admin :2019` fixes this by binding to all interfaces.
+
+{
+    # Admin API — compose-internal only (T-999.2-02).
+    # `origins` must include the in-network hostname the app uses to reach the
+    # admin endpoint (CADDY_ADMIN_URL=http://caddy:2019), otherwise Caddy
+    # rejects with 403 "client is not allowed to access from origin ''" because
+    # the default origins allowlist is the listen address only — and Node's
+    # fetch does not set an Origin header so Caddy falls back to Host matching.
+    admin :2019 {
+        origins caddy:2019 localhost:2019 127.0.0.1:2019
+    }
+
+    # No automatic HTTPS issuance — host nginx terminates TLS (D-03).
+    auto_https off
+
+    # Persist dynamic config changes (preview routes added via Admin API) so they
+    # survive container restarts. Stored in the caddy_data volume mounted in compose.
+    # Caddy persists by default; the Caddyfile directive only accepts `off` to disable,
+    # so omission here leaves persistence enabled (intended).
+
+    # JSON logging for journalctl-friendly output.
+    log {
+        output stdout
+        format json
+    }
+}
+
+# Public entry point — receives traffic from host nginx.
+:8080 {
+    # Host canonicalization — fixes auth ghost-dashboard caused by 127.0.0.1 vs localhost
+    # cookie scope mismatch (RFC 6265). Any request whose Host header is not the canonical
+    # AUTH_URL host is 308-redirected so the browser re-issues against the canonical host
+    # BEFORE Auth.js issues any Set-Cookie. Canonical host is supplied via the
+    # CANONICAL_HOST env var on the caddy service (see docker-compose.yml).
+    #
+    # The matcher AND-combines its conditions, so we exempt preview subdomains
+    # (e.g. {env-uuid}.127.0.0.1.nip.io[:port]) by adding a second `not` clause.
+    # Without this exemption, dynamically-registered preview routes never get
+    # reached because the canonical-host redirect intercepts the request first.
+    #
+    # NOTE: We use Caddyfile-time substitution `{$CANONICAL_HOST}` and
+    # `{$PREVIEW_HOST}` (NOT runtime `{env.…}`). Runtime placeholders are NOT
+    # expanded inside the `header_regexp` pattern argument — Caddy compiles the
+    # regex at startup with the literal placeholder text, which never matches a
+    # real Host header and causes EVERY request to redirect, producing an
+    # infinite loop. Caddyfile-time `{$VAR}` substitutes at config-adapt time.
+    @noncanonical {
+        not header_regexp Host (?i)^{$CANONICAL_HOST}$
+        not header_regexp Host (?i)\.{$PREVIEW_HOST}(:\d+)?$
+    }
+    redir @noncanonical http://{$CANONICAL_HOST}{uri} 308
+
+    # Socket.IO path (terminal auth + /logs namespace — see server/terminal-server.ts).
+    # Both the /terminal and /logs namespaces share the `/ws/socket.io` path.
+    handle /ws/* {
+        reverse_proxy terminal:3001
+    }
+
+    # Everything else → Next.js app (dashboard, API, preview subdomain rewrites
+    # handled internally by src/middleware.ts for non-Caddy-registered hosts).
+    handle {
+        reverse_proxy app:3000
+    }
+}

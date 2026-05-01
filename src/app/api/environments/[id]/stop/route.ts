@@ -5,6 +5,7 @@ import { db } from '@/lib/db';
 import { environments } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { composeStop } from '@/lib/docker/docker-service';
+import { deregisterPreviewRoute } from '@/lib/docker/caddy-lifecycle';
 import { config } from '@/lib/config';
 
 type Params = { params: Promise<{ id: string }> };
@@ -61,6 +62,8 @@ export async function POST(request: NextRequest, { params }: Params) {
           .update(environments)
           .set({ status: 'stopped' })
           .where(eq(environments.id, envId));
+        // Deregister preview route from Caddy (D-11, 999.2). Idempotent no-op if unregistered.
+        await deregisterPreviewRoute(env.slug);
       } else {
         await db
           .update(environments)

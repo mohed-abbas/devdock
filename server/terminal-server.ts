@@ -260,6 +260,7 @@ logsNs.on('connection', async (socket) => {
 
 // Start server
 const PORT = parseInt(process.env.TERMINAL_PORT || '3001', 10);
-httpServer.listen(PORT, '127.0.0.1', () => {
-  console.log(`DevDock terminal server listening on 127.0.0.1:${PORT}`);
+const HOST = process.env.TERMINAL_HOST || '0.0.0.0';
+httpServer.listen(PORT, HOST, () => {
+  console.log(`DevDock terminal server listening on ${HOST}:${PORT}`);
 });

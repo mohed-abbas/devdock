@@ -1,3 +1,20 @@
+/**
+ * Preview subdomain proxy — Next.js fallback path.
+ *
+ * Phase 999.2 update (D-11, D-18): Caddy (inside DevDock's compose stack) now
+ * handles preview routing FIRST via the Caddy Admin API. Plan 08 wires
+ * addPreviewRoute/removePreviewRoute into the environment lifecycle routes.
+ *
+ * This Next.js route remains as a fallback for:
+ *   1. Environments created before the 999.2 cutover whose Caddy route was
+ *      never registered.
+ *   2. Request paths that reach Next.js directly (e.g., if host nginx is
+ *      ever reconfigured to bypass Caddy temporarily).
+ *
+ * Deprecation-in-place (D-18): do not remove this file in 999.2. A follow-up
+ * phase will remove it and the middleware.ts subdomain rewrite after a grace
+ * period confirms Caddy routing is the sole code path in production.
+ */
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { environments } from '@/lib/db/schema';

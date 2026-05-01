@@ -152,11 +152,60 @@ Plans:
 
 **Goal:** DevDock detects and uses the project's own `docker-compose.yml` instead of generating one. Injects a dev container as an extra service on the project's network. Enables multi-service projects (frontend + backend + Postgres + Redis + Adminer) to run their full stack from the dashboard — users work on any project regardless of infrastructure complexity.
 **Why:** Current approach (single dev container + optional sidecar checkboxes) doesn't support projects with their own Docker Compose stacks. Users must manually start services, defeating DevDock's core value of productive remote development from anywhere.
+**Depends on:** Phase 999.2 (self-containerization locks the proxy/network/volume/socket topology that project-native injection plugs into).
 **Requirements:** TBD
 **Plans:** 0 plans
 
 Plans:
 - [ ] TBD (promote with /gsd-review-backlog when ready)
+
+### Phase 999.2: DevDock Self-Containerization (BACKLOG)
+
+**Goal:** DevDock ships its own `docker-compose.yml` — `app` (Next.js), `terminal` (Socket.IO), `postgres`, and `caddy` — so `docker compose up` is the entire dev and prod story. Replaces the current systemd + host-Postgres + host-nginx setup. Migrations auto-run on container start. No hardcoded host paths. Direction: **me-first, OSS-cheap** — build for the current VPS, make cheap choices that keep future npm/Docker-image distribution unblocked (env-var config, containerized dependencies, env-var admin seed, no host installs). Scope spans impact on Phase 1 (systemd→compose), Phase 4 (terminal server as service), and Phase 6 (proxy placement/preview routing topology).
+**Why:** Current stack requires juggling `npm run dev` + `npm run term:dev` + `npm run db:push` locally, systemd units + host Postgres + host nginx in prod, and hardcoded `/home/murx/` paths throughout. Self-containerizing eliminates dev ergonomic friction, simplifies prod deploy to `docker compose up -d --build`, and makes the eventual OSS release (npm CLI / published Docker image) a packaging wrapper rather than a rewrite. Must land before 999.1 because project-native compose injection depends on how DevDock's own stack wires the proxy, Docker socket, and `.claude`/data/apps volumes.
+**Locked direction (from /gsd-discuss-phase 999.1 pivot, 2026-04-17):**
+  - Build for the current VPS now; design so OSS distribution is a later packaging phase, not a redesign.
+  - Postgres: containerized in DevDock's stack with a dedicated named volume (host Postgres keeps running for production apps under /home/murx/).
+  - Caddy (or nginx) lives inside DevDock's compose with auto-TLS; shared `devdock-proxy` Docker network so Caddy can reach user-project containers by name.
+  - Auto-migrate on app container start (`drizzle-kit push` or migration runner in entrypoint). No manual DB setup.
+  - Admin seeded from env vars (`ADMIN_USERNAME` / `ADMIN_PASSWORD_HASH`) on first boot if no users exist.
+  - Zero hardcoded host paths — everything configurable via env (`DEVDOCK_DATA_DIR`, `PRODUCTION_APPS_DIR`, `CLAUDE_CONFIG_PATH`, etc.).
+  - Config split: `.env.example` shipped with safe defaults, `.env.local` gitignored for per-host secrets.
+**Explicitly deferred to a later phase (999.3+):** npm CLI wrapper, published Docker image, install script, non-author-facing docs (README/CONTRIBUTING), license, GitHub org/CI badges, admin UI first-run setup, multi-user polish (USER-01..04).
+**Requirements:** (runtime re-implementation of INFRA-01..05, TERM-01..05, DASH-17 — phase_req_ids null by design; no new REQ-IDs)
+**Plans:** 10 plans
+
+Plans:
+- [ ] 999.2-01-PLAN.md — Wave 0 validation stubs (compose-lint, entrypoint.test, hash-password.test, stack-smoke, vitest.config)
+- [ ] 999.2-02-PLAN.md — Env+seed foundation: extend config.ts + .env.example, hash-password.ts, seed-admin-boot.ts, promote drizzle-kit/tsx to deps
+- [ ] 999.2-03-PLAN.md — Multi-stage Dockerfile (app-runner + terminal-runner targets), .dockerignore, Caddyfile
+- [ ] 999.2-04-PLAN.md — Container entrypoints: scripts/entrypoint-app.sh (postgres-wait → GID fixup → drizzle-kit push → seed → exec) + scripts/entrypoint-terminal.sh
+- [ ] 999.2-05-PLAN.md — docker-compose.yml (4 services + 2 networks + 3 volumes) + docker-compose.override.yml (dev HMR); remove legacy docker-compose.dev.yml
+- [ ] 999.2-06-PLAN.md — Caddy Admin API client: caddy-admin.ts + types + vitest tests (idempotent DELETE-then-POST upsert)
+- [ ] 999.2-07-PLAN.md — Per-project compose template: attach dev service to devdock-proxy external network + regression test
+- [ ] 999.2-08-PLAN.md — Wire addPreviewRoute/removePreviewRoute into env lifecycle routes (create/start/stop/delete) + annotate /api/preview fallback
+- [ ] 999.2-09-PLAN.md — Deploy artifact updates: nginx upstream → Caddy :8080, systemd deprecation header, HUMAN-UAT cutover runbook
+- [ ] 999.2-10-PLAN.md — End-to-end smoke gate (autonomous: false — requires Docker): run all shell smokes + vitest; populate VALIDATION.md per-task map
+
+### Phase 999.2.1: Fix entrypoint test and Dockerfile build env (INSERTED)
+
+**Goal:** Close the two E2E gaps surfaced by 999.2 Plan 10's validation gate so the stack-smoke + entrypoint integration tests turn green and `999.2-VALIDATION.md` can flip to `nyquist_compliant: true`.
+**Why:** Phase 999.2 merged with 9/10 plans green and Plan 10 reporting `gaps-found`. Two real defects block the E2E gate: (GAP-1) `scripts/entrypoint-app.sh` ignores `POSTGRES_PORT`, so `tests/entrypoint.test.sh` cannot drive a host-side throwaway postgres; (GAP-2) Dockerfile builder stage lacks placeholder `DATABASE_URL`/`AUTH_SECRET` ARGs, so `npm run build` fails at Next.js page-data collection. Both are 2-3 line edits.
+**Scope:** 3 small file edits (entrypoint + test + Dockerfile) + re-run Plan 10's gate. Source of truth: `.planning/phases/999.2-devdock-self-containerization/999.2-10-SUMMARY.md` and `.planning/phases/999.2-devdock-self-containerization/999.2-VALIDATION.md` Gaps table.
+**Requirements:** None (gap-closure for 999.2 — no new REQ-IDs)
+**Plans:** TBD — run `/gsd-plan-phase 999.2.1`
+
+### Phase 999.2.2: Fix compose mount paths and terminal env (CLOSED 2026-05-01)
+
+**Status:** Complete. `999.2.2-VERIFICATION.md` status: passed. Six post-phase quick tasks (260501-mqx, ihv, ia1, gx3, vk1, obf, ogb, p58) closed cascade defects surfaced during E2E retesting (Socket.IO connectivity, Tailwind v4 dev regression, OAuth host scoping, full preview-routing chain). Tracked in STATE.md "Quick Tasks Completed".
+
+**Goal:** Close the two stack-smoke gaps surfaced after 999.2.1 unblocked the earlier stages of Plan 10's gate, so `bash scripts/stack-smoke.sh` × 2 exits 0 end-to-end and `999.2-VALIDATION.md` can flip to `nyquist_compliant: true`.
+**Why:** Phase 999.2.1 closed the original GAP-1 (entrypoint POSTGRES_PORT) and GAP-2 (Dockerfile builder placeholders), plus an inline GAP-3 (Caddyfile `persist_config`). Running Plan 10's gate past those unblocks revealed two more pre-existing defects: (GAP-4) `docker-compose.yml` bind-mounts hard-code `/srv/devdock/*` production paths using the `${VAR}:${VAR}` pattern, which breaks local dev on Darwin; (GAP-5) the `terminal` service env block is missing `DATABASE_URL`, but `server/terminal-server.ts` imports `src/lib/config.ts` which hard-fails at boot without it. Both are small changes but both are required before the Plan 10 × 2 idempotency gate can go fully green.
+**Scope:** (a) Compose mount-path policy: either update `.env.example` to document the absolute-path requirement for local dev, or change the mount pattern to `${VAR}:/fixed/container/path` so host paths can be relative. (b) Terminal service `DATABASE_URL` wiring: add to env block, OR split `src/lib/config.ts` so terminal paths don't require DB vars. (c) Re-run full Plan 10 gate (tsc + vitest + compose-lint + stack-smoke × 2). (d) Flip `999.2-VALIDATION.md` rows 01-T3 / 02-T3 / 04-T1 / 10-T1 to ✅ green and set `nyquist_compliant: true`, `status: approved`. Source of truth: `.planning/phases/999.2.1-fix-entrypoint-test-and-dockerfile-build-env/999.2.1-01-SUMMARY.md` (GAPs 4-5 section) and `999.2-VALIDATION.md` Gaps table.
+**Requirements:** None (continuation of 999.2 gap-closure — no new REQ-IDs)
+**Plans:** 1/1 plans complete
+Plans:
+- [x] 999.2.2-01-PLAN.md — Apply GAP-4 .env.example absolute-path comments + GAP-5 terminal DATABASE_URL, re-run Plan 10 gate ×2, flip 999.2-VALIDATION.md to approved
 
 ## Progress
 

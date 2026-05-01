@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Phase 6 UI-SPEC approved
-last_updated: "2026-04-16T13:39:42.848Z"
-last_activity: 2026-04-16
+status: complete
+stopped_at: "Phase 999.2.2 closed — milestone v1.0 done; subsequent work is quick-task polish only"
+last_updated: "2026-05-01T16:30:00.000Z"
+last_activity: 2026-05-01
 progress:
-  total_phases: 8
-  completed_phases: 6
-  total_plans: 23
-  completed_plans: 23
+  total_phases: 11
+  completed_phases: 11
+  total_plans: 35
+  completed_plans: 35
   percent: 100
 ---
 
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-08)
 
 **Core value:** Enable productive remote development on any project from anywhere so a Claude Code Max subscription isn't wasted
-**Current focus:** Phase 06 — dashboard-monitoring
+**Current focus:** Milestone complete — preview-routing chain fixed end-to-end via quick tasks. Idle.
 
 ## Current Position
 
-Phase: 7
-Plan: Not started
-Status: Executing Phase 06
-Last activity: 2026-04-16
+Phase: 999.2.2 (closed)
+Plan: All complete
+Status: Milestone v1.0 closed. Subsequent fixes captured as quick tasks (260501-mqx → 260501-p58).
+Last activity: 2026-05-01 - Completed quick task 260501-p58: Fix preview routing end-to-end (6 cascading bugs)
 
 Progress: [██████████] 100%
 
@@ -36,7 +36,7 @@ Progress: [██████████] 100%
 
 **Velocity:**
 
-- Total plans completed: 20
+- Total plans completed: 21
 - Average duration: ~4min
 - Total execution time: ~24min
 
@@ -49,6 +49,7 @@ Progress: [██████████] 100%
 | 03 | 4 | - | - |
 | 05 | 4 | - | - |
 | 06 | 6 | - | - |
+| 999.2.2 | 1 | - | - |
 
 **Recent Trend:**
 
@@ -64,6 +65,7 @@ Progress: [██████████] 100%
 | Phase 02-authentication P03 | 6min | 2 tasks | 7 files |
 | Phase 03-environment-lifecycle P03 | 14min | 2 tasks | 13 files |
 | Phase 03-environment-lifecycle P04 | 12min | 2 tasks | 1 files |
+| Phase 999.2.2 P01 | 24min | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -97,6 +99,14 @@ Recent decisions affecting current work:
 - [Phase 06-dashboard-monitoring]: Reuse terminal server Socket.IO instance for /logs namespace (same HMAC auth pattern)
 - [Phase 06-dashboard-monitoring]: Docker log demux via docker.modem.demuxStream() to prevent binary garbage
 - [Phase 06-dashboard-monitoring]: Exclude data/ from tsconfig to prevent dev environment workspaces from breaking builds
+- [Phase 999.2.2]: Terminal service DATABASE_URL wired via single compose env line mirroring app service (GAP-5 closed; D-05)
+- [Phase 999.2.2]: .env.example absolute-host-path policy: blank DEVDOCK_DATA_DIR + comment blocks for three bind-mount vars (GAP-4 closed; D-02)
+- [Phase 999.2.2]: Cascade deviations auto-fixed in docker-compose.yml (Rule 3): absolute tsx path command + GITHUB_* empty-string passthrough removal; zod .optional() requires undefined not empty string
+
+### Roadmap Evolution
+
+- Phase 999.2.1 inserted after Phase 999.2 on 2026-04-19: gap-closure for entrypoint POSTGRES_PORT support + Dockerfile builder placeholder env vars (URGENT — surfaced by Plan 10's E2E gate)
+- Phase 999.2.2 inserted after Phase 999.2.1 on 2026-04-19: continuation gap-closure — compose mount-path policy (GAP-4) + terminal service DATABASE_URL wiring (GAP-5). Surfaced after 999.2.1 unblocked the earlier stages of Plan 10's gate. Scope: make `stack-smoke × 2` green end-to-end, flip remaining VALIDATION.md rows, set `nyquist_compliant: true`.
 
 ### Pending Todos
 
@@ -108,8 +118,22 @@ None yet.
 - Open question: Exact nginx config structure under /home/murx/shared/nginx
 - Open question: Whether mohed_abbas is in the docker group
 
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260426-vk1 | Fix GitHub OAuth state cookie not surviving callback on http://localhost | 2026-04-26 | 1ace7d6 | [260426-vk1-fix-github-oauth-state-cookie-not-surviv](./quick/260426-vk1-fix-github-oauth-state-cookie-not-surviv/) |
+| 260501-gx3 | Harden GitHub OAuth callback redirects to use AUTH_URL as canonical host | 2026-05-01 | 333befb | [260501-gx3-harden-github-oauth-callback-redirects-t](./quick/260501-gx3-harden-github-oauth-callback-redirects-t/) |
+| 260501-ia1 | Fix Turbopack 500: cannot resolve shadcn/tailwind.css import in src/app/globals.css | 2026-05-01 | af6d8fb | [260501-ia1-fix-turbopack-500-cannot-resolve-shadcn-](./quick/260501-ia1-fix-turbopack-500-cannot-resolve-shadcn-/) |
+| 260501-ihv | Fix auth host-mismatch ghost dashboard: canonicalize requests to AUTH_URL host at Caddy edge | 2026-05-01 | 0641e0a | [260501-ihv-fix-auth-host-mismatch-ghost-dashboard-c](./quick/260501-ihv-fix-auth-host-mismatch-ghost-dashboard-c/) |
+| 260501-mqx | Fix terminal Socket.IO CORS by switching to same-origin connection; cascade-fixed terminal-server bind from 127.0.0.1 → 0.0.0.0 | 2026-05-01 | 93e2a08 | [260501-mqx-fix-terminal-socket-io-cors-by-switching](./quick/260501-mqx-fix-terminal-socket-io-cors-by-switching/) |
+| 260501-obf | Default previewPort to 3000 in New Environment dialog so envs ship with a working preview port | 2026-05-01 | 8ad9a7a | [260501-obf-default-previewport-to-3000-in-new-envir](./quick/260501-obf-default-previewport-to-3000-in-new-envir/) |
+| 260501-ogb | Pre-fill Edit Environment Preview Port with 3000 when currently unset (one-click upgrade for legacy envs) | 2026-05-01 | fb9fdbb | [260501-ogb-default-edit-environment-previewport-to-](./quick/260501-ogb-default-edit-environment-previewport-to-/) |
+| 260501-p58 | Fix preview routing end-to-end — 6 cascading bugs across PATCH lifecycle, Caddy origins/order, env config, and dev runtime vars | 2026-05-01 | 9804d73 | [260501-p58-fix-preview-routing-end-to-end-register-](./quick/260501-p58-fix-preview-routing-end-to-end-register-/) |
+
 ## Session Continuity
 
-Last session: 2026-04-14T13:09:14.135Z
-Stopped at: Phase 6 UI-SPEC approved
-Resume file: .planning/phases/06-dashboard-monitoring/06-UI-SPEC.md
+Last session: 2026-05-01T16:30:00.000Z
+Stopped at: Milestone v1.0 closed. Six post-phase quick tasks landed on 2026-05-01 (mqx, ihv, ia1, gx3, vk1, obf, ogb, p58) covering Socket.IO connectivity, Tailwind v4 dev regression, GitHub OAuth host scoping, and full preview-routing chain.
+Resume file: None
+Notes: `next dev` failure observed in mohed-abbas/portfolio is a portfolio-side `output: 'export'` issue (Next.js 16 silent-exit regression), not a DevDock concern.

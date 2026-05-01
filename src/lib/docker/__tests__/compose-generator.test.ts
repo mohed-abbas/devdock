@@ -205,7 +205,7 @@ describe('generateComposeFile', () => {
     expect(vi.mocked(writeFile)).toHaveBeenCalledWith(
       expect.stringContaining('/tmp/data/my-project/docker-compose.yml'),
       expect.any(String),
-      'utf-8'
+      { encoding: 'utf-8', mode: 0o600 }
     );
     expect(result).toContain('/tmp/data/my-project/docker-compose.yml');
   });
@@ -241,5 +241,46 @@ describe('generateComposeFile', () => {
     expect(writtenContent).toContain('ANTHROPIC_API_KEY=');
     // Should not have any value after the equals sign on that line
     expect(writtenContent).toMatch(/ANTHROPIC_API_KEY=\n/);
+  });
+
+  it('attaches dev service to devdock-proxy external network (Phase 999.2 D-10)', async () => {
+    // Use the REAL template file so we also catch drift if someone edits base-compose.yml
+    // without updating this test. Import readFile from the actual module (bypass mock).
+    vi.mocked(readFile).mockImplementationOnce(async (p) => {
+      const realFs = await vi.importActual<typeof import('fs/promises')>('fs/promises');
+      return realFs.readFile(p as string, 'utf-8');
+    });
+
+    let writtenYaml = '';
+    vi.mocked(writeFile).mockImplementationOnce(async (_path, content) => {
+      writtenYaml = content as string;
+    });
+
+    await generateComposeFile(
+      {
+        projectSlug: 'my-proj',
+        projectName: 'My Proj',
+        baseImage: 'devdock-base:latest',
+        hostUid: 1000,
+        hostGid: 1000,
+        claudeConfigPath: '',
+        anthropicApiKey: '',
+        enablePostgres: false,
+        enableRedis: false,
+      },
+      '/tmp/devdock-test-data',
+    );
+
+    const doc = parseYaml(writtenYaml) as {
+      networks: Record<string, { external?: boolean; name?: string }>;
+      services: { dev: { networks: string[] } };
+    };
+
+    expect(doc.networks['devdock-proxy']).toBeDefined();
+    expect(doc.networks['devdock-proxy'].external).toBe(true);
+    expect(doc.networks['devdock-proxy'].name).toBe('devdock-proxy');
+
+    expect(doc.services.dev.networks).toContain('project-net');
+    expect(doc.services.dev.networks).toContain('devdock-proxy');
   });
 });

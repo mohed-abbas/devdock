@@ -6,6 +6,7 @@ import { db } from '@/lib/db';
 import { environments } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { composeDown, removeDataDir, getProjectStatus } from '@/lib/docker/docker-service';
+import { deregisterPreviewRoute, registerPreviewRoute } from '@/lib/docker/caddy-lifecycle';
 import { config } from '@/lib/config';
 
 const patchSchema = z.object({
@@ -112,6 +113,10 @@ export async function DELETE(request: NextRequest, { params }: Params) {
     }
   }
 
+  // Deregister preview route from Caddy (D-11, 999.2).
+  // Called after composeDown but before DB row delete — semantically correct ordering.
+  await deregisterPreviewRoute(env.slug);
+
   // Remove data directory (D-12)
   try {
     await removeDataDir(env.slug);
@@ -167,6 +172,21 @@ export async function PATCH(request: NextRequest, { params }: Params) {
     })
     .where(and(eq(environments.id, id), eq(environments.userId, session.user.id)))
     .returning();
+
+  // Hot-update Caddy preview route when previewPort changes on a running env.
+  // Without this, users have to stop+start to surface a port set after creation.
+  // No-ops on stopped envs; `start` re-registers on the next start.
+  if (updated.status === 'running' && previewPort !== env.previewPort) {
+    if (previewPort) {
+      await registerPreviewRoute({
+        id: updated.id,
+        slug: updated.slug,
+        previewPort,
+      });
+    } else {
+      await deregisterPreviewRoute(updated.slug);
+    }
+  }
 
   return NextResponse.json(updated);
 }

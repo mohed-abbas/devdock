@@ -32,14 +32,16 @@ export function EditEnvironmentDialog({
   const [error, setError] = useState<string | null>(null);
   const [name, setName] = useState(environment.name);
   const [previewPort, setPreviewPort] = useState(
-    environment.previewPort?.toString() ?? ''
+    environment.previewPort?.toString() ?? '3000'
   );
 
-  // Sync state when environment changes or dialog opens
+  // Sync state when environment changes or dialog opens.
+  // When previewPort is unset, propose 3000 so the user can accept the
+  // common dev-server default with a single Save click.
   useEffect(() => {
     if (open) {
       setName(environment.name);
-      setPreviewPort(environment.previewPort?.toString() ?? '');
+      setPreviewPort(environment.previewPort?.toString() ?? '3000');
       setError(null);
     }
   }, [open, environment.name, environment.previewPort]);
@@ -152,7 +154,9 @@ export function EditEnvironmentDialog({
               onChange={(e) => setPreviewPort(e.target.value)}
             />
             <p className="text-sm text-muted-foreground">
-              Port your app listens on inside the container
+              {environment.previewPort === null
+                ? 'Currently unset. Defaulting to 3000 — clear to keep unset, or change to your dev server’s port.'
+                : 'Port your app listens on inside the container.'}
             </p>
           </div>
           <div aria-live="polite" className="min-h-[20px]">

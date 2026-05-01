@@ -1,3 +1,23 @@
+# ============================================================================
+# DEPRECATED (Phase 999.2): DevDock now runs as a Docker Compose stack.
+#
+# This systemd unit is retained in-place (D-18) until the VPS cutover is
+# confirmed successful. Once Docker Compose has been running cleanly in
+# production for a verification window, this file (plus docker-compose.dev.yml
+# removal and any remaining deprecated-in-place references) will be removed
+# in a follow-up cleanup phase.
+#
+# Cutover runbook:
+#   .planning/phases/999.2-devdock-self-containerization/999.2-HUMAN-UAT.md
+#
+# Cutover commands (summary):
+#   sudo systemctl stop devdock
+#   sudo systemctl disable devdock
+#   # (update host nginx configs per deploy/nginx/*.conf changes)
+#   sudo nginx -t && sudo systemctl reload nginx
+#   cd /home/murx-dev/devdock && docker compose up -d --build
+# ============================================================================
+
 # deploy/systemd/devdock.service
 # Install: sudo cp deploy/systemd/devdock.service /etc/systemd/system/
 # Enable: sudo systemctl enable devdock

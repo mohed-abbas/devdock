@@ -1,3 +1,10 @@
+/**
+ * Auth middleware + preview subdomain rewriter.
+ *
+ * Phase 999.2 note: The preview subdomain rewrite to /api/preview/* is a FALLBACK
+ * path. Caddy handles preview routing first (see src/app/api/preview/.../route.ts
+ * header comment). Removal deferred per D-18.
+ */
 import NextAuth from 'next-auth';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';

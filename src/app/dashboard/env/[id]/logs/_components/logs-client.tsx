@@ -61,7 +61,7 @@ export function LogsClient({
     }
 
     // Connect to Socket.IO /logs namespace on terminal server
-    const terminalServerUrl = process.env.NEXT_PUBLIC_TERMINAL_URL || 'http://localhost:3001';
+    const terminalServerUrl = process.env.NEXT_PUBLIC_TERMINAL_URL || '';
     const socket = io(`${terminalServerUrl}/logs`, {
       path: '/ws/socket.io',
       auth: { token },

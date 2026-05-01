@@ -21,6 +21,19 @@ const envSchema = z.object({
   // Note: NEXT_PUBLIC_PREVIEW_DOMAIN must also be set for the client-side preview button.
   // It should match PREVIEW_DOMAIN (e.g., "preview.devdock.example.com").
   // Next.js public env vars are not validated here -- they are inlined at build time.
+
+  // --- Containerization (Phase 999.2) ---
+  // Postgres service password (used by compose `postgres` service + DATABASE_URL).
+  POSTGRES_PASSWORD: z.string().min(8, 'POSTGRES_PASSWORD must be at least 8 characters').optional(),
+  // Admin seed (D-14). Both must be set for first-boot seeding to run.
+  ADMIN_USERNAME: z.string().min(1).optional(),
+  ADMIN_PASSWORD_HASH: z.string().regex(/^\$2[aby]\$\d{2}\$/, 'ADMIN_PASSWORD_HASH must be a bcrypt hash').optional(),
+  // Caddy Admin API (D-11). Default matches the compose service name `caddy` on devdock-net.
+  CADDY_ADMIN_URL: z.string().url().default('http://caddy:2019'),
+  // Public Caddy listen port inside the compose network (host nginx proxies here via 127.0.0.1).
+  CADDY_INTERNAL_PORT: z.coerce.number().int().min(1024).max(65535).default(8080),
+  // Docker socket GID — optional; entrypoint detects at runtime if unset (RESEARCH.md Open Questions #2).
+  DOCKER_GID: z.coerce.number().int().min(0).optional(),
 });
 
 export type Config = z.infer<typeof envSchema>;

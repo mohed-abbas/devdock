@@ -1,0 +1,225 @@
+# docker-compose.yml — DevDock self-containerized stack (Phase 999.2)
+#
+# Topology:
+#   host nginx (ports 80 and 443, TLS)
+#     └→ 127.0.0.1:${CADDY_INTERNAL_PORT:-8080}
+#         └→ caddy (devdock-net + devdock-proxy)
+#             ├→ app:3000          (Next.js standalone)
+#             ├→ terminal:3001     (Socket.IO /ws/*)
+#             └→ devdock-{slug}-dev:{port}  (preview — registered at runtime via Caddy Admin API)
+#
+# Security invariants (all [BLOCKING], verified by plan-checker):
+#   - Docker socket bind-mounted ONLY into `app` and `terminal` (INFRA-04 / T-999.2-01)
+#   - Caddy admin API (port 2019) is NEVER in `ports:` (T-999.2-02)
+#   - Postgres has NO `ports:` mapping — devdock-net only (T-999.2-04)
+#   - Caddy publishes ONLY to 127.0.0.1 loopback (host nginx is the edge)
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: devdock-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-devdock}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in .env.local}
+      POSTGRES_DB: ${POSTGRES_DB:-devdock}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - devdock-net
+    # NO ports: mapping — only reachable via devdock-net (T-999.2-04)
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-devdock} -d $${POSTGRES_DB:-devdock}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    # Docker socket is NEVER mounted here (INFRA-04)
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: devdock-caddy
+    restart: unless-stopped
+    environment:
+      # Canonical host:port for Caddy's host-canonicalization redir. Must match the
+      # host portion of AUTH_URL so Auth.js cookies are scoped to the same host the
+      # browser uses for /api/*. Default mirrors the compose default for AUTH_URL.
+      CANONICAL_HOST: ${CANONICAL_HOST:-localhost:${CADDY_INTERNAL_PORT:-8080}}
+      # Host portion of PREVIEW_DOMAIN (no port). Used by the @noncanonical
+      # matcher in the Caddyfile to exempt preview subdomains from the
+      # canonical-host redirect — without this, dynamically-registered preview
+      # routes are never reached. Defaults to the local-dev nip.io pattern.
+      PREVIEW_HOST: ${PREVIEW_HOST:-127.0.0.1.nip.io}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      # MUST attach to BOTH networks (RESEARCH.md §5 [BLOCKING]):
+      #   devdock-net   → reaches app + terminal by name
+      #   devdock-proxy → reaches per-project devdock-{slug}-dev containers for preview
+      - devdock-net
+      - devdock-proxy
+    ports:
+      # Loopback ONLY — host nginx proxies here. NEVER expose to 0.0.0.0 (D-02).
+      - "127.0.0.1:${CADDY_INTERNAL_PORT:-8080}:8080"
+    # DO NOT publish port 2019 to host — Admin API is compose-internal only (T-999.2-02)
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:2019/config/"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    # Docker socket is NEVER mounted here (INFRA-04)
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: app-runner
+      args:
+        NEXT_PUBLIC_PREVIEW_DOMAIN: ${NEXT_PUBLIC_PREVIEW_DOMAIN:-}
+    container_name: devdock-app
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      HOSTNAME: "0.0.0.0"
+      DATABASE_URL: postgresql://${POSTGRES_USER:-devdock}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-devdock}
+      POSTGRES_HOST: postgres
+      POSTGRES_USER: ${POSTGRES_USER:-devdock}
+      POSTGRES_DB: ${POSTGRES_DB:-devdock}
+      AUTH_SECRET: ${AUTH_SECRET:?AUTH_SECRET must be set in .env.local}
+      AUTH_URL: ${AUTH_URL:-http://localhost:${CADDY_INTERNAL_PORT:-8080}}
+      DOCKER_SOCKET: /var/run/docker.sock
+      DOCKER_GID: ${DOCKER_GID:-}
+      DEVDOCK_DATA_DIR: ${DEVDOCK_DATA_DIR:-/srv/devdock/data}
+      DEVDOCK_MAX_CONCURRENT_ENVS: ${DEVDOCK_MAX_CONCURRENT_ENVS:-3}
+      CLAUDE_CONFIG_PATH: ${CLAUDE_CONFIG_PATH:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      TERMINAL_PORT: "3001"
+      PRODUCTION_APPS_DIR: ${PRODUCTION_APPS_DIR:-}
+      PREVIEW_DOMAIN: ${PREVIEW_DOMAIN:-}
+      # NEXT_PUBLIC_PREVIEW_DOMAIN is passed both as a build arg (above) for prod
+      # bundles and as a runtime env var here for dev mode (Turbopack reads it
+      # from process.env at request time). Without the runtime var, the Preview
+      # button on env cards stays hidden in dev.
+      NEXT_PUBLIC_PREVIEW_DOMAIN: ${NEXT_PUBLIC_PREVIEW_DOMAIN:-}
+      # Optional — compose maps these env_file pass-throughs. Empty strings would
+      # fail zod .min(1)/regex validation in src/lib/config.ts envSchema
+      # (GITHUB_* are .optional() but not .default('')). Use the env_file
+      # pass-through form (single-element env list of "KEY") so compose only
+      # sets each key when it is defined on the host (in .env) — absent on
+      # host means undefined in container, which zod .optional() accepts.
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-}
+      ADMIN_PASSWORD_HASH: ${ADMIN_PASSWORD_HASH:-}
+      # GITHUB_* — bare interpolation without default. When the var is set in .env,
+      # compose injects it. When unset, compose emits a warning and injects an empty
+      # string, which fails zod .min(1)/.regex() at app init — loud rather than the
+      # silent "integration not configured" failure mode.
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
+      GITHUB_TOKEN_ENCRYPTION_KEY: ${GITHUB_TOKEN_ENCRYPTION_KEY}
+      CADDY_ADMIN_URL: ${CADDY_ADMIN_URL:-http://caddy:2019}
+      CADDY_INTERNAL_PORT: ${CADDY_INTERNAL_PORT:-8080}
+    volumes:
+      # Docker socket — T-999.2-01 mitigation: ONLY into app and terminal, never user containers.
+      - /var/run/docker.sock:/var/run/docker.sock
+      # Mirror-mount pattern (D-09) — host paths must equal container paths.
+      # These bind-mounts enable generated per-project compose files to use the same path strings.
+      - ${DEVDOCK_DATA_DIR:-/srv/devdock/data}:${DEVDOCK_DATA_DIR:-/srv/devdock/data}
+      - ${PRODUCTION_APPS_DIR:-/srv/devdock/apps-empty}:${PRODUCTION_APPS_DIR:-/srv/devdock/apps-empty}:ro
+      - ${CLAUDE_CONFIG_PATH:-/srv/devdock/claude-empty}:${CLAUDE_CONFIG_PATH:-/srv/devdock/claude-empty}:ro
+    networks:
+      - devdock-net
+    # NO ports: published — app is reached via Caddy (T-999.2-04 analog)
+    depends_on:
+      postgres:
+        condition: service_healthy
+      caddy:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  terminal:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: terminal-runner
+    container_name: devdock-terminal
+    restart: unless-stopped
+    # Absolute tsx path — `/app/node_modules/.bin` is not on the base node:22-slim PATH,
+    # so `exec gosu termuser tsx ...` fails with "tsx: executable file not found in $PATH".
+    # Using the absolute path bypasses PATH lookup entirely. (Surfaced after GAP-5 fix
+    # let the container reach CMD exec instead of crashing at loadConfig().)
+    command: ["/app/node_modules/.bin/tsx", "server/terminal-server.ts"]
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-devdock}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-devdock}
+      DOCKER_SOCKET: /var/run/docker.sock
+      DOCKER_GID: ${DOCKER_GID:-}
+      TERMINAL_PORT: "3001"
+      AUTH_SECRET: ${AUTH_SECRET:?AUTH_SECRET must be set in .env.local}
+      AUTH_URL: ${AUTH_URL:-http://localhost:${CADDY_INTERNAL_PORT:-8080}}
+      DEVDOCK_URL: ${AUTH_URL:-http://localhost:${CADDY_INTERNAL_PORT:-8080}}
+      CLAUDE_CONFIG_PATH: ${CLAUDE_CONFIG_PATH:-}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${CLAUDE_CONFIG_PATH:-/srv/devdock/claude-empty}:${CLAUDE_CONFIG_PATH:-/srv/devdock/claude-empty}:ro
+    networks:
+      - devdock-net
+    depends_on:
+      app:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 15s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  # Internal network for DevDock's own services
+  devdock-net:
+    name: devdock-net
+    driver: bridge
+  # Shared network for preview routing — Caddy reaches per-project dev containers here.
+  # This stack OWNS this network (external: false). Per-project composes reference it with external: true.
+  devdock-proxy:
+    name: devdock-proxy
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
+
+volumes:
+  postgres_data:
+    name: devdock-postgres-data
+  caddy_data:
+    name: devdock-caddy-data
+  caddy_config:
+    name: devdock-caddy-config
