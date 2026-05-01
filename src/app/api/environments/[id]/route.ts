@@ -6,7 +6,11 @@ import { db } from '@/lib/db';
 import { environments } from '@/lib/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { composeDown, removeDataDir, getProjectStatus } from '@/lib/docker/docker-service';
-import { deregisterPreviewRoute, registerPreviewRoute } from '@/lib/docker/caddy-lifecycle';
+import {
+  deregisterPreviewRoute,
+  PreviewRegistrationError,
+  registerPreviewRoute,
+} from '@/lib/docker/caddy-lifecycle';
 import { config } from '@/lib/config';
 
 const patchSchema = z
@@ -182,20 +186,43 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   // Hot-update Caddy preview route when previewPort changes on a running env.
   // Without this, users have to stop+start to surface a port set after creation.
   // No-ops on stopped envs; `start` re-registers on the next start.
+  //
+  // Caddy failures are surfaced via errorMessage (status stays 'running')
+  // — see start/route.ts for the same pattern. The PATCH still returns 200
+  // with the updated row so the dialog closes cleanly; the user discovers
+  // the preview-routing failure via the env card tooltip.
+  let previewError: PreviewRegistrationError | null = null;
   if (
     previewPort !== undefined &&
     updated.status === 'running' &&
     previewPort !== env.previewPort
   ) {
-    if (previewPort) {
-      await registerPreviewRoute({
-        id: updated.id,
-        slug: updated.slug,
-        previewPort,
-      });
-    } else {
-      await deregisterPreviewRoute(updated.slug);
+    try {
+      if (previewPort) {
+        await registerPreviewRoute({
+          id: updated.id,
+          slug: updated.slug,
+          previewPort,
+        });
+      } else {
+        await deregisterPreviewRoute(updated.slug);
+      }
+    } catch (err) {
+      if (err instanceof PreviewRegistrationError) {
+        previewError = err;
+      } else {
+        throw err;
+      }
     }
+  }
+
+  if (previewError) {
+    const [withWarning] = await db
+      .update(environments)
+      .set({ errorMessage: previewError.message.slice(0, 500) })
+      .where(and(eq(environments.id, id), eq(environments.userId, session.user.id)))
+      .returning();
+    return NextResponse.json(withWarning);
   }
 
   return NextResponse.json(updated);
